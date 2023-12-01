@@ -14,6 +14,9 @@ import lexicalAnalyzer as la
 import re
 import re
 
+# define static variables
+INITIAL_LEXEMES_LIST = [["Lexemes", "Classification"]]
+
 #--- initializing global variables ---#
 fileDirectory = ""
 lexemesList = [["Lexemes", "Classification"]]
@@ -32,6 +35,11 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
     btwFlag = False
     obtwFlag = False
     fileDirectory = filedialog.askopenfilename()
+
+    # reset existing lexemes dictionary
+    global existingLexemesDict, lexemesList
+    existingLexemesDict = {}
+    lexemesList = INITIAL_LEXEMES_LIST
 
     # early exit if no file directory selected
     if fileDirectory == "":
@@ -133,6 +141,9 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
         else:
             existingLexemesDict[token] = la.allKeywords[token]
 
+    # reset the lexemesList
+    lexemesList = [["Lexemes", "Classification"]]
+
     # append all tokens and their classifications to the lexemesList
     for token in existingLexemesDict: lexemesList.append([token, existingLexemesDict[token]])
 
@@ -151,7 +162,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
 
     lexemesLabel = tk.CTkLabel(lexemesFrame,text= "Lexemes")
     lexemesLabel.pack(expand=True, fill="both", padx=5)
-
+    print(f"Third: {lexemesList}\n")
     lexemesTable = CTkTable(lexemesFrame, row = len(lexemesList), column = 2, values = lexemesList)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
 
@@ -160,7 +171,7 @@ def draw():
     # '''Function that draws the main window.'''
 
     # access the global variables
-    global fileDirectory, lexemesList, existingLexemesDict 
+    global fileDirectory, lexemesList, existingLexemesDict
 
     #--- initializing customtkinter ---#
     root = tk.CTk()
