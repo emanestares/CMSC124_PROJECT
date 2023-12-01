@@ -48,3 +48,71 @@ allKeywords = {
     "R": "R Keyword",
     "A": "A Keyword"
 }
+
+iterator = {
+    "IM": {
+        "OUTTA": {
+            "YR": "done"
+        }
+    },
+    "I": {
+        "HAS": {
+            "A": "done"
+        }
+    },
+    "QUOSHUNT": {
+        "OF": "done"
+    },
+    "SMALLR": {
+        "OF": "done"
+    },
+    "BOTH": {
+        "SAEM": "done"
+    },
+    "IS": {
+        "NOW": {
+            "A": "done"
+        }
+    },
+    "IM": {
+        "IN": {
+            "YR": "done"
+        }
+    },
+    "BIGGR": {
+        "OF": "done"
+    },
+    "DIFF": {
+        "OF": "done"
+    },
+    "O": {
+        "RLY?": {
+            "done"
+        }
+    },
+    "YA": {
+        "RLY": {
+            "done"
+        }
+    },
+    "NO": {
+        "WAI": {
+            "done"
+        }
+    },
+    "SUM": {
+        "OF": "done"
+    },
+    "MOD": {
+        "OF": "done"
+    },
+    "WON": {
+        "OF": "done"
+    },
+    "ANY": {
+        "OF": "done"
+    },
+    "ALL": {
+        "OF": "done"
+    }
+}
