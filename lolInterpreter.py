@@ -11,6 +11,7 @@ from tkinter import filedialog
 from CTkTable import *
 import customtkinter as tk
 import lexicalAnalyzer as la
+import re
 
 #--- initializing global variables ---#
 fileDirectory = ""
@@ -79,7 +80,11 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
                 if token[-1] == "\"":
                     stringTemp += token
                     stringTemp += " "
-                    existingLexemesDict[stringTemp] = "String Literal"
+
+                    # clean the string
+                    stringTemp = re.search(r'"([^"]*)"', stringTemp).group(1)
+
+                    existingLexemesDict[f'"{stringTemp}"'] = "String Literal"
                     stringFlag = False
                     stringTemp = ""
                 else:
@@ -134,7 +139,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
     for eachKey, eachValue in existingLexemesDict.items():
         print(f"'{eachKey}': '{eachValue}'")
     print("")
-    
+
     for widget in lexemesFrame.winfo_children():
         widget.destroy()
 
