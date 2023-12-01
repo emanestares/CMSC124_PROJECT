@@ -58,11 +58,8 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
 
     # variable that stores the current iterator
     current_iterator = la.iterator
-    print(current_iterator)
-    print("===================== ")
     for token in tempList:
 
-        print(f"Token: {token}\nCurrent current_iterator: {current_iterator}")
 
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
@@ -94,7 +91,6 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
                 
 
                 # check if item is in the iterator
-                print(f"Current_iterator: {current_iterator}\n\n")
                 if token in current_iterator:
 
                     # acquire the next value from iterator
@@ -117,7 +113,6 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
 
                         # update the current iterator to the next dictionary
                         current_iterator = key_value
-                        print(f"current iterator is now {key_value}")
 
                 # if it is not in the iterator
                 else:
@@ -135,9 +130,11 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
     textEditor.insert("0.0", codeString)
 
     # print properly
+    print(f"Acquired Lexemes:\n")
     for eachKey, eachValue in existingLexemesDict.items():
         print(f"'{eachKey}': '{eachValue}'")
-
+    print("")
+    
     for widget in lexemesFrame.winfo_children():
         widget.destroy()
 
