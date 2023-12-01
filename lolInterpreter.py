@@ -1,4 +1,8 @@
 # Authors: 
+    # Member 1: Frederick Emmanuel S. Estares 
+    # Member 2: John Yves A. Baltazar 
+    # Member 3: Andi Lynson O. Torres
+
 # an interpreter for LOLCODE using python
 # GUI created using CustomTkinter
 
@@ -137,6 +141,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
                 else:
                     stack_string_variable = ""                          # reset
                     existingLexemesDict[token] = "Variable Identifier"  # treat as variable identifier
+        
         # if token is in the lexemes dictionary
         else:
             existingLexemesDict[token] = la.allKeywords[token]
