@@ -1,6 +1,6 @@
 HAI
     I HAS A var ITZ 15932
-    VISIBLE "noot  this is longer  noot!!" var OBTW test
+    VISIBLE "what?    okay..." var OBTW test
         test test test
         TLDR
     BIGGR OF 1410 AN 10051

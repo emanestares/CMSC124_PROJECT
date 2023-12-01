@@ -168,7 +168,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
 
 # draw the main window
 def draw():
-    # '''Function that draws the main window.'''
+    '''Function that draws the main window.'''
 
     # access the global variables
     global fileDirectory, lexemesList, existingLexemesDict
