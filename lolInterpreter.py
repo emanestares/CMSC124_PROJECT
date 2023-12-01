@@ -12,6 +12,7 @@ from CTkTable import *
 import customtkinter as tk
 import lexicalAnalyzer as la
 import re
+import re
 
 #--- initializing global variables ---#
 fileDirectory = ""
