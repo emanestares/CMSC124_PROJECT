@@ -46,7 +46,14 @@ allKeywords = {
     "YR": "YR Loop Keyword",
     "IT": "IT Keyword",
     "R": "R Keyword",
-    "A": "A Keyword"
+    "A": "A Keyword",
+    "HOW IZ I": "Function Start",
+    "IF U SAY SO": "Function End", 
+    "FOUND YR": "Return Expression", 
+    "GTFO": "Return No Value", 
+    "BTW": "Single Line Comment", 
+    "OBTW": "Multi Line Comment Start", 
+    "TLDR": "Multi Line Comment End"
 }
 
 iterator = {
@@ -99,6 +106,21 @@ iterator = {
         "WAI": {
             "done"
         }
+    },
+    "HOW":{
+        "IZ":{
+            "I": "done"
+        }
+    },
+    "IF":{
+        "U":{
+            "SAY":{
+                "SO": "done"
+            }
+        }
+    },
+    "FOUND":{
+        "YR": "done"
     },
     "SUM": {
         "OF": "done"

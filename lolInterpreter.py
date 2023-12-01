@@ -11,6 +11,7 @@ from tkinter import filedialog
 from CTkTable import *
 import customtkinter as tk
 import lexicalAnalyzer as la
+import re
 
 #--- initializing global variables ---#
 fileDirectory = ""
@@ -26,117 +27,126 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
     tempList = []
     stringTemp = ""
     codeString = ""
-    tempLine = ""
     stringFlag = False
+    btwFlag = False
+    obtwFlag = False
     fileDirectory = filedialog.askopenfilename()
 
+    # early exit if no file directory selected
     if fileDirectory == "":
         return 0
     
+    # early exit if chosen file's extension is not lol
     if fileDirectory.split(".")[1] != "lol":
         fileDirLabel.configure(text="Selected file is not a LOL CODE.")
         return 0
 
+    # open file
     inputFile = open(fileDirectory, "r")
 
+    # get directory of file
     fileDirLabel.configure(text=fileDirectory.split("/")[-1])
 
+    # iterate through file
     for line in inputFile:
-        codeString+=line
-        tempLine = line[:-1]
+        codeString += line                  # store all lines in codeString        
+        tempList += line[:-1].split(" ")    # split on spaces then add each to the tempList
+        tempList += "\n"
 
-        while tempLine.find(" ") == 0 and tempLine.find(" ") != -1:
-            tempLine = tempLine[1:-1]
-
-        tempList += line[:-1].split(" ")
-
+    # display tempList
     print(f"Templist: {tempList}\n")
 
     # variable that stores the current string for strings with two or more values
     # this will be empty if placed in dictionary, else not empty
+    # [!] used for keywords with multiple tokens
     stack_string_variable = ""
 
     # variable that stores the current iterator
     current_iterator = la.iterator
+    
+    # iterate through each token in the tempList
     for token in tempList:
+        
+        # if BTW is encountered, ignore tokens until the end of the line
+        if token == "BTW": btwFlag = True
+        elif btwFlag == True:
+            if token == "\n":       btwFlag = False
+            else:                   continue
 
+        # if OBTW is encounted, ignore tokens until TLDR has been reached
+        if token == "OBTW": obtwFlag = True
+        elif obtwFlag == True:
+            if token == "TLDR":     obtwFlag = False
+            else:                   continue
+
+        # ignore new lines 
+        if token == "\n": continue
 
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
-
-            # # clean out the stack string variable and continue
-            # stack_string_variable = ""
-
+            # if token is "", add a space then continue iterating
             if token == "":
                 stringTemp += " "
-                continue
+                continue            
 
+            # if the first character of the token is '\"', then it is part of a string literal 
             if token[0] == "\"":
-                stringTemp += token
-                stringTemp += " "
-                stringFlag = True
+                stringTemp += token     # append the token
+                stringTemp += " "       # add a space
+                stringFlag = True       # next token will be part of the string
+            # if the previous token is an unpaired '\"'
             elif stringFlag == True:
+                # if the last part of the token is '\"', then it closes the string literal
                 if token[-1] == "\"":
-                    stringTemp += token
-                    stringTemp += " "
-                    existingLexemesDict[stringTemp] = "String Literal"
-                    stringFlag = False
-                    stringTemp = ""
+                    stringTemp += token # append the token
+                    stringTemp += " "   # add a space
+                    stringTemp = re.search(r'"([^"]*)"', stringTemp).group(1)   # clean the string
+                    existingLexemesDict[f'"{stringTemp}"'] = "String Literal"   # mark it as a string literal
+                    stringFlag = False  # next token is no longer part of the string
+                    stringTemp = ""     # reset
+                # the string is still unclosed, add it to stringTemp
                 else:
-                    stringTemp += token
+                    stringTemp += token # append the token
+            # not a string literal
             else:
-
                 # update the stack variable for string
                 stack_string_variable = stack_string_variable + f"{token}" if stack_string_variable == "" else stack_string_variable + f" {token}" 
                 
-
                 # check if item is in the iterator
                 if token in current_iterator:
-
-                    # acquire the next value from iterator
-                    key_value = current_iterator[token]
+                    key_value = current_iterator[token] # acquire the next value from iterator
 
                     # if there's no more afterwards
                     if key_value == "done":
-
-                        # update using the stack_string_variable
-                        existingLexemesDict[stack_string_variable] = la.allKeywords[stack_string_variable]
-
-                        # also update the current_iterator back
-                        current_iterator = la.iterator
-
-                        # clear the current string
-                        stack_string_variable = ""
-
+                        existingLexemesDict[stack_string_variable] = la.allKeywords[stack_string_variable]  # update using the stack_string_variable
+                        current_iterator = la.iterator                                                      # also update the current_iterator back
+                        stack_string_variable = ""                                                          # clear the current string
                     # if there's more afterwards
                     else: 
-
-                        # update the current iterator to the next dictionary
-                        current_iterator = key_value
-
+                        current_iterator = key_value # update the current iterator to the next dictionary
                 # if it is not in the iterator
                 else:
-                    stack_string_variable = ""
-                    existingLexemesDict[token] = "Variable Identifier"
-
+                    stack_string_variable = ""                          # reset
+                    existingLexemesDict[token] = "Variable Identifier"  # treat as variable identifier
         # if token is in the lexemes dictionary
         else:
-
             existingLexemesDict[token] = la.allKeywords[token]
 
-    for token in existingLexemesDict:
-        lexemesList.append([token, existingLexemesDict[token]])
+    # append all tokens and their classifications to the lexemesList
+    for token in existingLexemesDict: lexemesList.append([token, existingLexemesDict[token]])
 
+    # reset the text field
+    textEditor.delete('1.0', tk.END)
+
+    # display code in the text field
     textEditor.insert("0.0", codeString)
 
     # print properly
     print(f"Acquired Lexemes:\n")
-    for eachKey, eachValue in existingLexemesDict.items():
-        print(f"'{eachKey}': '{eachValue}'")
+    for eachKey, eachValue in existingLexemesDict.items(): print(f"'{eachKey}': '{eachValue}'")
     print("")
     
-    for widget in lexemesFrame.winfo_children():
-        widget.destroy()
+    for widget in lexemesFrame.winfo_children(): widget.destroy()
 
     lexemesLabel = tk.CTkLabel(lexemesFrame,text= "Lexemes")
     lexemesLabel.pack(expand=True, fill="both", padx=5)
@@ -155,8 +165,6 @@ def draw():
     root = tk.CTk()
     root.title("LOL Code Interpreter")
     # root.iconbitmap("./wine.ico")
-
-
 
     #--- Setting up GUI ---#
     tk.set_appearance_mode("dark")
@@ -213,9 +221,7 @@ def draw():
 
 # main function
 def main():
-
-    # draw the actual window
-    draw()
+    draw() # draw the actual window
 
 
 # start the main program
