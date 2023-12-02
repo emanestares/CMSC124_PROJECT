@@ -16,7 +16,6 @@ from CTkTable import *
 import customtkinter as tk
 import lexicalAnalyzer as la
 import re
-import re
 
 # define static variables
 INITIAL_LEXEMES_LIST = [["Lexemes", "Classification"]]
@@ -97,6 +96,13 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
 
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
+            if re.search("[0-9]\.[0-9]", token) != None:
+                existingLexemesDict[token] = "Float Literal"
+                continue
+            if re.search("^[0-9]+$", token) != None:
+                existingLexemesDict[token] = "Integer Literal"
+                continue
+
             # if token is "", add a space then continue iterating
             if token == "":
                 stringTemp += " "
