@@ -23,14 +23,137 @@ INITIAL_LEXEMES_LIST = [["Lexemes", "Classification"]]
 #--- initializing global variables ---#
 fileDirectory = ""
 lexemesList = [["Lexemes", "Classification"]]
+
+# contains all current dictionary descriptions
 existingLexemesDict = {}
+
+# contains all usable tokens including REPETITIONS
+existingLexemesList = []
+
+SKIPPING_KEYWORDS = [
+    "HAI", "KTHXBYE"
+]
+
+# Function that checks if string can be converted to float
+def is_float_convertible(number):
+        try:
+            float(number)
+            return True
+        except ValueError:
+            return False
+
+# Function that checks if string can be converted to integer
+def is_int_convertible(number):
+        try:
+            int(number)
+            return True
+        except ValueError:
+            return False
+
+# Function that converts a given stringed number to its raw numerical value
+def get_stringed_number_value(number):
+    return float(number) if is_float_convertible(number) else int(number) if is_int_convertible(number) else "<uninitialized>"
+            
+
+# Function that executes syntax analysis
+def syntaxAnalysis(lexemesList):
+    '''Function that executes syntax analysis given the list of lexemes.
+    This function returns a list of identifiers and their values.'''
+
+    # return value
+    ret_list = [["Identifier", "Value"]]
+
+    # variables
+    lexeme_skip_counter = 0
+    current_lexeme_index = -1
+
+    # do for every lexeme
+    for each_item in lexemesList:
+
+        # update iterating variable
+        current_lexeme_index += 1
+
+        # this is the identifier 
+        identifier = each_item[0]
+
+        # skip until lexeme skip counter is not 0
+        if lexeme_skip_counter != 0:
+            print(f"Skipping '{identifier}'")
+            lexeme_skip_counter -= 1
+            continue
+
+        # just print out cuz why not
+        print(f"'{identifier}':               {each_item[1]}")
+    
+        # skip HAI and BYE
+        if identifier in ["HAI", "KTHXBYE"]:
+            continue
+
+
+        # CASE OF: variable equalization
+        if identifier == "I HAS A":
+ 
+            # variable name is next item, also its value is current index + 3
+            ret_list.append([lexemesList[current_lexeme_index+1][0], f"{get_stringed_number_value(lexemesList[current_lexeme_index+3][0])}"])
+
+            # should skip 3 more items after this iteration
+            lexeme_skip_counter = 3
+
+
+        # CASE OF: arithmetic operations
+        if identifier in la.arithmetic_operations:
+
+            # variables here
+            first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
+            second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
+
+            # label to put in table
+            arithmetic_label = f"{lexemesList[current_lexeme_index][0]} "
+            arithmetic_label += f"{lexemesList[current_lexeme_index+1][0]} "
+            arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
+            arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
+
+            # addition
+            if identifier == "SUM OF":
+                ret_list.append([arithmetic_label, f"{first_number+second_number}"])
+            
+            # modulo
+            elif identifier == "MOD OF":
+                ret_list.append([arithmetic_label, f"{first_number%second_number}"])
+
+            # division
+            elif identifier == "QUOSHUNT OF":
+                ret_list.append([arithmetic_label, f"{first_number/second_number}"])
+
+            # minimum
+            elif identifier == "SMALLR OF":
+                ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
+
+            # maximum
+            elif identifier == "BIGGR OF":
+                ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
+
+            # subtraction
+            elif identifier == "DIFF OF":
+                ret_list.append([arithmetic_label, f"{first_number-second_number}"])
+
+            # multiplication
+            elif identifier == "PRODUKT OF":
+                ret_list.append([arithmetic_label, f"{first_number*second_number}"])
+
+            
+
+    print(f"Results: {ret_list}")
+    return ret_list
+
+
 
 #--- chooseFile [select button] ---#
 # - opens filedialog; open file from directory
 # - tokenize each lexemes
 # - appends the file to the text editor
 # - classifies each lexeme; display to the lexeme table
-def chooseFile(fileDirLabel, textEditor, lexemesFrame):
+def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     tempList = []
     stringTemp = ""
     codeString = ""
@@ -42,6 +165,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
     # reset existing lexemes dictionary
     global existingLexemesDict, lexemesList
     existingLexemesDict = {}
+    existingLexemesList = []
     lexemesList = INITIAL_LEXEMES_LIST
 
     # early exit if no file directory selected
@@ -94,13 +218,18 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
         # ignore new lines 
         if token == "\n": continue
 
+        if token == "AN":
+            print(f"Got AN lol")
+
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
             if re.search("[0-9]\.[0-9]", token) != None:
                 existingLexemesDict[token] = "Float Literal"
+                existingLexemesList.append([token, "Float Literal"])
                 continue
             if re.search("^[0-9]+$", token) != None:
                 existingLexemesDict[token] = "Integer Literal"
+                existingLexemesList.append([token, "Integer Literal"])
                 continue
 
             # if token is "", add a space then continue iterating
@@ -121,6 +250,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
                     stringTemp += " "   # add a space
                     stringTemp = re.search(r'"([^"]*)"', stringTemp).group(1)   # clean the string
                     existingLexemesDict[f'"{stringTemp}"'] = "String Literal"   # mark it as a string literal
+                    existingLexemesList.append([f'"{stringTemp}"', "String Literal"])
                     stringFlag = False  # next token is no longer part of the string
                     stringTemp = ""     # reset
                 # the string is still unclosed, add it to stringTemp
@@ -138,6 +268,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
                     # if there's no more afterwards
                     if key_value == "done":
                         existingLexemesDict[stack_string_variable] = la.allKeywords[stack_string_variable]  # update using the stack_string_variable
+                        existingLexemesList.append([stack_string_variable, la.allKeywords[stack_string_variable]])
                         current_iterator = la.iterator                                                      # also update the current_iterator back
                         stack_string_variable = ""                                                          # clear the current string
                     # if there's more afterwards
@@ -147,27 +278,26 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
                 else:
                     stack_string_variable = ""                          # reset
                     existingLexemesDict[token] = "Variable Identifier"  # treat as variable identifier
-        
+                    existingLexemesList.append([token, "Variable Identifier"])
         # if token is in the lexemes dictionary
         else:
+            if token == "AN": print(f"OKAY I GOT AN")
+            stack_string_variable = "" 
             existingLexemesDict[token] = la.allKeywords[token]
+            existingLexemesList.append([token, la.allKeywords[token]])
 
     # reset the lexemesList
     lexemesList = [["Lexemes", "Classification"]]
 
     # append all tokens and their classifications to the lexemesList
-    for token in existingLexemesDict: lexemesList.append([token, existingLexemesDict[token]])
-
+    # for token in existingLexemesDict: lexemesList.append([token, existingLexemesDict[token]])
+    for token in existingLexemesList: lexemesList.append([token[0], existingLexemesDict[token[0]]])
+    
     # reset the text field
     textEditor.delete('1.0', tk.END)
 
     # display code in the text field
     textEditor.insert("0.0", codeString)
-
-    # print properly
-    print(f"Acquired Lexemes:\n")
-    for eachKey, eachValue in existingLexemesDict.items(): print(f"'{eachKey}': '{eachValue}'")
-    print("")
     
     for widget in lexemesFrame.winfo_children(): widget.destroy()
 
@@ -176,6 +306,18 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame):
     print(f"Third: {lexemesList}\n")
     lexemesTable = CTkTable(lexemesFrame, row = len(lexemesList), column = 2, values = lexemesList)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
+
+    # execute analysis on the lexemes
+    syntax_analysis_results = syntaxAnalysis(lexemesList)
+    
+
+    for widget in symbolTableFrame.winfo_children(): widget.destroy()
+
+    symbolLabel = tk.CTkLabel(symbolTableFrame,text= "Symbol Table")
+    symbolLabel.pack(expand=True, fill="both", padx=5)
+    symbolTable = CTkTable(symbolTableFrame, row = len(syntax_analysis_results), column = 2, values = syntax_analysis_results)
+    symbolTable.pack(expand=True, fill="both", padx=5, pady=5)
+
 
 # draw the main window
 def draw():
@@ -213,7 +355,7 @@ def draw():
     #--- file explorer ---#
     fileDirLabel = tk.CTkLabel(fileExpFrame,text= "No File Selected")
     fileDirLabel.grid(row = 0, column = 0, padx=5, pady=2)
-    selectFileButton = tk.CTkButton(fileExpFrame, text = "SELECT FILE", command=lambda: chooseFile(fileDirLabel, textEditor, lexemesFrame))
+    selectFileButton = tk.CTkButton(fileExpFrame, text = "SELECT FILE", command=lambda: chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame))
     selectFileButton.grid(row = 0, column = 1, padx = 5, pady = 5, sticky = "e")
 
     textEditor = tk.CTkTextbox(fileExpFrame, width = 280, height=265)
@@ -230,8 +372,8 @@ def draw():
     symbolLabel = tk.CTkLabel(symbolTableFrame,text= "Symbol Table")
     symbolLabel.pack(expand=True, fill="both", padx=5)
 
-    lexemesTable = CTkTable(symbolTableFrame, row = 1, column = 0, values = [["Identifier", "Value"]])
-    lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
+    symbolTable = CTkTable(symbolTableFrame, row = 1, column = 0, values = [["Identifier", "Value"]])
+    symbolTable.pack(expand=True, fill="both", padx=5, pady=5)
 
     #--- Execute/Rub Button and Console ---#
     executeButton = tk.CTkButton(terminalFrame, text = "EXECUTE")

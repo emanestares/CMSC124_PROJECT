@@ -3,8 +3,13 @@ HAI
     VISIBLE "what?    okay..." var OBTW test
         test test test
         TLDR
-    BIGGR OF 1410 AN 10051
-    SUM OF 10 AN 10041.10
+    SUM OF 10 AN 20
+    MOD OF 10 AN 20
+    QUOSHUNT OF 10 AN 20
+    SMALLR OF 10 AN 20
+    DIFF OF 10 AN 20
+    PRODUKT OF 10 AN 20
+    BIGGR OF 10 AN 20
     HOW IZ I MAINUMBA YR one YR two
         I HAS A var BTW this is a comment  
         FOUND YR var2

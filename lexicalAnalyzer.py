@@ -2,6 +2,7 @@ allKeywords = {
     "IM OUTTA YR": "Loop",
     "I HAS A": "Variable Declaration",
     "QUOSHUNT OF": "Division Operator",
+    "PRODUKT OF": "Multiplication Operator",
     "SMALLR OF": "Smaller Of",
     "BOTH SAEM": "Equal Operator",
     "DIFFRINT": "Not Equal Operator",
@@ -55,6 +56,16 @@ allKeywords = {
     "OBTW": "Multi Line Comment Start", 
     "TLDR": "Multi Line Comment End"
 }
+
+arithmetic_operations = [
+    "SUM OF", 
+    "MOD OF", 
+    "QUOSHUNT OF", 
+    "SMALLR OF", 
+    "DIFF OF", 
+    "PRODUKT OF",
+    "BIGGR OF"
+]
 
 iterator = {
     "IM": {
@@ -135,6 +146,9 @@ iterator = {
         "OF": "done"
     },
     "ALL": {
+        "OF": "done"
+    },
+    "PRODUKT": {
         "OF": "done"
     }
 }
