@@ -1,5 +1,5 @@
-HAI
-    I HAS A var ITZ 12
+pre
+    I HAS A VISIBLE ITZ 12
     VISIBLE "noot    noot" var
-    BIGGR OF 10 AN 100
-KTHXBYE
+    BIGGR OF dsfd AN dsfdf
+bye

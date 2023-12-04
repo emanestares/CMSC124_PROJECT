@@ -34,6 +34,12 @@ SKIPPING_KEYWORDS = [
     "HAI", "KTHXBYE"
 ]
 
+# displays the error inside the terminal
+def displayOnTerminal(errorMessage):
+    terminal.configure(state = "normal", text_color = "pink")
+    terminal.insert("0.0", errorMessage)
+    terminal.configure(state = "disabled")
+
 # Function that checks if string can be converted to float
 def is_float_convertible(number):
         try:
@@ -52,11 +58,44 @@ def is_int_convertible(number):
 
 # Function that converts a given stringed number to its raw numerical value
 def get_stringed_number_value(number):
-    return float(number) if is_float_convertible(number) else int(number) if is_int_convertible(number) else "<uninitialized>"
-            
+    return float(number) if is_float_convertible(number) else int(number) if is_int_convertible(number) else "<uninitialized>"            
 
 # Function that executes syntax analysis
 def syntaxAnalysis(lexemesList):
+    global terminal
+    variableNames = []
+
+    # checks for start of code keyword, prompts user if none found
+    if lexemesList[1][0] != "HAI":
+        print("wow")
+        displayOnTerminal("Syntax Error: Start of code not found.\n")
+
+    # checks for end of code keyword, prompts user if none found
+    if lexemesList[-1][0] != "KTHXBYE":
+        displayOnTerminal("Syntax Error: End of code not found.\n")
+    
+    count = 0
+    for i in lexemesList:
+        # checks for a variable name after I HAS A
+        if i[0] == "I HAS A":
+            if lexemesList[count+1][0] in la.allKeywords.keys() or lexemesList[count+1][0] in la.arithmetic_operations or not lexemesList[count+1][0][0].isalpha():
+                displayOnTerminal("Syntax Error: Expecting variable name.\n")
+            else:
+                variableNames.append(lexemesList[count+1][0])
+        
+        # checks if comparison operation has two arithmetic literals (int, float)
+        if i[0] in la.arithmetic_operations:
+            if lexemesList[count+1][1] not in ["Integer Literal", "Float Literal"] or lexemesList[count+3][1] not in ["Integer Literal", "Float Literal"]:
+                displayOnTerminal("Syntax Error: Expecting integer or float literals.\n")
+
+        # checks if a variable is declared before being referenced
+        if i[1] == "Variable Identifier" and lexemesList[count-1][0] != "I HAS A":
+            if i[0] not in variableNames:
+                displayOnTerminal("Syntax Error: Variable referenced before definition: " + i[0] + ".\n")
+        count += 1
+
+
+def symbolTableAnalyzer(lexemesList):
     '''Function that executes syntax analysis given the list of lexemes.
     This function returns a list of identifiers and their values.'''
 
@@ -69,7 +108,6 @@ def syntaxAnalysis(lexemesList):
 
     # do for every lexeme
     for each_item in lexemesList:
-
         # update iterating variable
         current_lexeme_index += 1
 
@@ -83,26 +121,21 @@ def syntaxAnalysis(lexemesList):
             continue
 
         # just print out cuz why not
-        print(f"'{identifier}':               {each_item[1]}")
+        print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
     
         # skip HAI and BYE
-        if identifier in ["HAI", "KTHXBYE"]:
-            continue
-
+        if identifier in ["HAI", "KTHXBYE"]: continue
 
         # CASE OF: variable equalization
         if identifier == "I HAS A":
- 
             # variable name is next item, also its value is current index + 3
             ret_list.append([lexemesList[current_lexeme_index+1][0], f"{get_stringed_number_value(lexemesList[current_lexeme_index+3][0])}"])
 
             # should skip 3 more items after this iteration
             lexeme_skip_counter = 3
 
-
         # CASE OF: arithmetic operations
         if identifier in la.arithmetic_operations:
-
             # variables here
             first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
             second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
@@ -113,35 +146,23 @@ def syntaxAnalysis(lexemesList):
             arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
             arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
 
-            # addition
-            if identifier == "SUM OF":
-                ret_list.append([arithmetic_label, f"{first_number+second_number}"])
-            
-            # modulo
-            elif identifier == "MOD OF":
-                ret_list.append([arithmetic_label, f"{first_number%second_number}"])
-
-            # division
-            elif identifier == "QUOSHUNT OF":
-                ret_list.append([arithmetic_label, f"{first_number/second_number}"])
-
-            # minimum
-            elif identifier == "SMALLR OF":
-                ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
-
-            # maximum
-            elif identifier == "BIGGR OF":
-                ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
-
-            # subtraction
-            elif identifier == "DIFF OF":
-                ret_list.append([arithmetic_label, f"{first_number-second_number}"])
-
-            # multiplication
-            elif identifier == "PRODUKT OF":
-                ret_list.append([arithmetic_label, f"{first_number*second_number}"])
-
-            
+            match identifier:
+                case "SUM OF":          # addition
+                    ret_list.append([arithmetic_label, f"{first_number+second_number}"])
+                case "MOD OF":          # modulo
+                    ret_list.append([arithmetic_label, f"{first_number%second_number}"])
+                case "QUOSHUNT OF":     # division
+                    ret_list.append([arithmetic_label, f"{first_number/second_number}"])
+                case "SMALLR OF":       # minimum
+                    ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
+                case "BIGGR OF":        # maximum
+                    ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
+                case "DIFF OF":
+                    ret_list.append([arithmetic_label, f"{first_number-second_number}"])
+                case "PRODUKT OF":
+                    ret_list.append([arithmetic_label, f"{first_number*second_number}"])
+                case _:
+                    pass            
 
     print(f"Results: {ret_list}")
     return ret_list
@@ -163,10 +184,14 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     fileDirectory = filedialog.askopenfilename()
 
     # reset existing lexemes dictionary
-    global existingLexemesDict, lexemesList
+    global existingLexemesDict, lexemesList, terminal
     existingLexemesDict = {}
     existingLexemesList = []
     lexemesList = INITIAL_LEXEMES_LIST
+
+    terminal.configure(state = "normal")
+    terminal.delete('1.0', tk.END)
+    terminal.configure(state = "disabled")
 
     # early exit if no file directory selected
     if fileDirectory == "":
@@ -203,6 +228,8 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     # iterate through each token in the tempList
     for token in tempList:
         
+        # TODO: tokens after BTW or OBTW still need to show in the lexical analysis
+
         # if BTW is encountered, ignore tokens until the end of the line
         if token == "BTW": btwFlag = True
         elif btwFlag == True:
@@ -236,6 +263,9 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
             if token == "":
                 stringTemp += " "
                 continue            
+            
+            # TODO: string delimiters show up as seperate entites in the lexemes table;
+            # TODO: that is, "-string delimiter, <text>-string literal, "-string delimiter
 
             # if the first character of the token is '\"', then it is part of a string literal 
             if token[0] == "\"":
@@ -248,9 +278,11 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
                 if token[-1] == "\"":
                     stringTemp += token # append the token
                     stringTemp += " "   # add a space
-                    stringTemp = re.search(r'"([^"]*)"', stringTemp).group(1)   # clean the string
-                    existingLexemesDict[f'"{stringTemp}"'] = "String Literal"   # mark it as a string literal
-                    existingLexemesList.append([f'"{stringTemp}"', "String Literal"])
+                    stringTemp = re.search(r'"([^"]*)"', stringTemp).group(1)   # clean the 
+
+                    existingLexemesDict[f"{stringTemp}"] = "String Literal"   # mark it as a string literal
+                    existingLexemesList.append([f"{stringTemp}", "String Literal"])
+
                     stringFlag = False  # next token is no longer part of the string
                     stringTemp = ""     # reset
                 # the string is still unclosed, add it to stringTemp
@@ -301,21 +333,23 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     
     for widget in lexemesFrame.winfo_children(): widget.destroy()
 
+    # TODO: I think dapat lahat ng lexemes ipriprint in order, hindi mga unique occurences lang
+
     lexemesLabel = tk.CTkLabel(lexemesFrame,text= "Lexemes")
     lexemesLabel.pack(expand=True, fill="both", padx=5)
-    print(f"Third: {lexemesList}\n")
+    print(f"Lexemes List: {lexemesList}\n")
     lexemesTable = CTkTable(lexemesFrame, row = len(lexemesList), column = 2, values = lexemesList)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
 
     # execute analysis on the lexemes
     syntax_analysis_results = syntaxAnalysis(lexemesList)
-    
+    symbol_table_results = symbolTableAnalyzer(lexemesList)
 
     for widget in symbolTableFrame.winfo_children(): widget.destroy()
 
     symbolLabel = tk.CTkLabel(symbolTableFrame,text= "Symbol Table")
     symbolLabel.pack(expand=True, fill="both", padx=5)
-    symbolTable = CTkTable(symbolTableFrame, row = len(syntax_analysis_results), column = 2, values = syntax_analysis_results)
+    symbolTable = CTkTable(symbolTableFrame, row = len(symbol_table_results), column = 2, values = symbol_table_results)
     symbolTable.pack(expand=True, fill="both", padx=5, pady=5)
 
 
@@ -324,7 +358,7 @@ def draw():
     '''Function that draws the main window.'''
 
     # access the global variables
-    global fileDirectory, lexemesList, existingLexemesDict
+    global fileDirectory, lexemesList, existingLexemesDict, terminal
 
     #--- initializing customtkinter ---#
     root = tk.CTk()
@@ -351,6 +385,7 @@ def draw():
 
     terminalFrame = tk.CTkFrame(root, height=200, width=950)
     terminalFrame.grid(row = 2, column = 0, columnspan = 3, padx = 5, pady = 2)
+
 
     #--- file explorer ---#
     fileDirLabel = tk.CTkLabel(fileExpFrame,text= "No File Selected")
