@@ -83,9 +83,6 @@ def syntaxAnalysis(lexemesList):
 
     print(f"{len(lexemesList)} vs {len(existingLexemesDict_newline_reference)}")
 
-    for i in range(1,len(lexemesList)):
-        print(f"token '{lexemesList[i][0]}': {existingLexemesDict_newline_reference[i-1]}")
-    
     # go through the other items
     count = -1
     variables_initialized, initializing, should_skip = False, False, False
