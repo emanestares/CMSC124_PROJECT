@@ -15,6 +15,7 @@ from tkinter import filedialog
 from CTkTable import *
 import customtkinter as tk
 import lexicalAnalyzer as la
+import syntacticalAnalyzer as grammar
 import re
 
 # define static variables
@@ -146,23 +147,33 @@ def symbolTableAnalyzer(lexemesList):
             arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
             arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
 
-            match identifier:
-                case "SUM OF":          # addition
-                    ret_list.append([arithmetic_label, f"{first_number+second_number}"])
-                case "MOD OF":          # modulo
-                    ret_list.append([arithmetic_label, f"{first_number%second_number}"])
-                case "QUOSHUNT OF":     # division
-                    ret_list.append([arithmetic_label, f"{first_number/second_number}"])
-                case "SMALLR OF":       # minimum
-                    ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
-                case "BIGGR OF":        # maximum
-                    ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
-                case "DIFF OF":
-                    ret_list.append([arithmetic_label, f"{first_number-second_number}"])
-                case "PRODUKT OF":
-                    ret_list.append([arithmetic_label, f"{first_number*second_number}"])
-                case _:
-                    pass            
+            # addition
+            if identifier == "SUM OF":
+                ret_list.append([arithmetic_label, f"{first_number+second_number}"])
+
+            # modulo
+            elif identifier == "MOD OF":
+                ret_list.append([arithmetic_label, f"{first_number%second_number}"])
+
+            # division
+            elif identifier == "QUOSHUNT OF":
+                ret_list.append([arithmetic_label, f"{first_number/second_number}"])
+
+            # minimum
+            elif identifier == "SMALLR OF":
+                ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
+
+            # maximum
+            elif identifier == "BIGGR OF":
+                ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
+
+            # subtraction
+            elif identifier == "DIFF OF":
+                ret_list.append([arithmetic_label, f"{first_number-second_number}"])
+
+            # multiplication
+            elif identifier == "PRODUKT OF":
+                ret_list.append([arithmetic_label, f"{first_number*second_number}"])
 
     print(f"Results: {ret_list}")
     return ret_list
@@ -210,9 +221,12 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
 
     # iterate through file
     for line in inputFile:
-        codeString += line                  # store all lines in codeString        
-        tempList += line[:-1].split(" ")    # split on spaces then add each to the tempList
-        tempList += "\n"
+        codeString += line                  # store all lines in codeString  
+
+        if tempList != []:
+            tempList += "\n"
+
+        tempList += line.strip().split(" ")    # split on spaces then add each to the tempList
 
     # display tempList
     print(f"Templist: {tempList}\n")
@@ -229,6 +243,9 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     for token in tempList:
         
         # TODO: tokens after BTW or OBTW still need to show in the lexical analysis
+        if token == "\n":
+            existingLexemesDict[token] = "Line Break"
+            existingLexemesList.append([token, "Line Break"])
 
         # if BTW is encountered, ignore tokens until the end of the line
         if token == "BTW": btwFlag = True
@@ -268,7 +285,9 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
             # TODO: that is, "-string delimiter, <text>-string literal, "-string delimiter
 
             # if the first character of the token is '\"', then it is part of a string literal 
-            if token[0] == "\"":
+            if token[0] == "\"" and not stringFlag:
+                existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
+                existingLexemesList.append(["\"", "String Delimeter"])
                 stringTemp += token     # append the token
                 stringTemp += " "       # add a space
                 stringFlag = True       # next token will be part of the string
@@ -283,11 +302,15 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
                     existingLexemesDict[f"{stringTemp}"] = "String Literal"   # mark it as a string literal
                     existingLexemesList.append([f"{stringTemp}", "String Literal"])
 
+                    existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
+                    existingLexemesList.append(["\"", "String Delimeter"])
+
                     stringFlag = False  # next token is no longer part of the string
                     stringTemp = ""     # reset
                 # the string is still unclosed, add it to stringTemp
                 else:
                     stringTemp += token # append the token
+                    print(stringTemp)
             # not a string literal
             else:
                 # update the stack variable for string
@@ -317,6 +340,8 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
             stack_string_variable = "" 
             existingLexemesDict[token] = la.allKeywords[token]
             existingLexemesList.append([token, la.allKeywords[token]])
+        
+
 
     # reset the lexemesList
     lexemesList = [["Lexemes", "Classification"]]
@@ -342,7 +367,8 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
 
     # execute analysis on the lexemes
-    syntax_analysis_results = syntaxAnalysis(lexemesList)
+    returnStatus = syntaxAnalysis(lexemesList)
+    grammar.analyze(existingLexemesList)
     symbol_table_results = symbolTableAnalyzer(lexemesList)
 
     for widget in symbolTableFrame.winfo_children(): widget.destroy()

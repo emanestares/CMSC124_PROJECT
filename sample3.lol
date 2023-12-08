@@ -1,8 +1,9 @@
 HAI
     I HAS A var ITZ 15932
-    VISIBLE "what?    okay..." var OBTW test
-        test test test
-        TLDR
+    VISIBLE "what?    okay..." var 
+    OBTW 
+    test test test test
+    TLDR
     SUM OF 10 AN 20
     MOD OF 10 AN 20
     QUOSHUNT OF 10 AN 20
