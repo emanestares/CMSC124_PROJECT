@@ -97,15 +97,19 @@ def syntaxAnalysis(lexemesList):
             # start of variable initialization
             if i[0] == "WAZZUP":
                 initializing = True
+                current_new_line += 1
                 continue
 
             # end the variable initialization
             if i[0] == "BUHBYE":
                 variables_initialized = True
+                current_new_line += 1
                 continue
 
             # variable initialization starts here
             if initializing:    
+
+                print(f"'{i[0]}'  nl: {current_new_line};  ref: {existingLexemesDict_newline_reference[count]}")
 
                 # check for variable name after I HAS A
                 if i[0] == "I HAS A":
@@ -115,15 +119,17 @@ def syntaxAnalysis(lexemesList):
                     print(f"lexemesList[{count+1+1}][{0}] = {lexemesList[count+1+1][0]}")
                     if lexemesList[count+2+1][0] in la.allKeywords.keys() or lexemesList[count+2+1][0] in la.arithmetic_operations:
                        syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count+1]}]: Expecting variable name.\n")
+                       continue
                     
                     # if proper, add to variable names
                     else:
                         syntax_error_list.insert(0, f"Syntax Correct [line {existingLexemesDict_newline_reference[count+1]}]. Added '{lexemesList[count+3][0]}' variable.\n")
                         variable_names.append(lexemesList[count+3][0])
+                        continue
 
 
                 # always go to next line properly
-                elif current_new_line != existingLexemesDict_newline_reference[count]:
+                elif current_new_line == existingLexemesDict_newline_reference[count]:
                     continue
 
                 # if no "I HAS A", skip to next new line
