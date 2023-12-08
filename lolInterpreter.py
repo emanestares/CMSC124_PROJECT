@@ -31,12 +31,20 @@ existingLexemesDict = {}
 # contains all usable tokens including REPETITIONS
 existingLexemesList = []
 
+# contains the variable names
+variable_names = []
+
 SKIPPING_KEYWORDS = [
     "HAI", "KTHXBYE"
 ]
 
+# variable that stores how many new lines have passed since the lexemes dictionary
+existingLexemesDict_newline_reference = []
+
 # displays the error inside the terminal
 def displayOnTerminal(errorMessage):
+    '''Function that displays a particular string at the terminal part of the GUI.'''
+
     terminal.configure(state = "normal", text_color = "pink")
     terminal.insert("0.0", errorMessage)
     terminal.configure(state = "disabled")
@@ -63,38 +71,45 @@ def get_stringed_number_value(number):
 
 # Function that executes syntax analysis
 def syntaxAnalysis(lexemesList):
-    global terminal
-    variableNames = []
+    global terminal, existingLexemesDict_newline_reference, variable_names
+
+    # variable that stores the syntax errors list, for better printing
+    syntax_error_list = []
 
     # checks for start of code keyword, prompts user if none found
     if lexemesList[1][0] != "HAI":
         print("wow")
-        displayOnTerminal("Syntax Error: Start of code not found.\n")
+        syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[0]}]: Start of code not found.\n")
 
-    # checks for end of code keyword, prompts user if none found
-    if lexemesList[-1][0] != "KTHXBYE":
-        displayOnTerminal("Syntax Error: End of code not found.\n")
-    
+    # go through the other items
     count = 0
-    for i in lexemesList:
+    for i in lexemesList[2:-1]:
+        print(f"OKAY GOT: '{i}'")
         # checks for a variable name after I HAS A
         if i[0] == "I HAS A":
             if lexemesList[count+1][0] in la.allKeywords.keys() or lexemesList[count+1][0] in la.arithmetic_operations or not lexemesList[count+1][0][0].isalpha():
-                displayOnTerminal("Syntax Error: Expecting variable name.\n")
+                syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Expecting variable name.\n")
             else:
-                variableNames.append(lexemesList[count+1][0])
+                variable_names.append(lexemesList[count+1][0])
         
         # checks if comparison operation has two arithmetic literals (int, float)
         if i[0] in la.arithmetic_operations:
             if lexemesList[count+1][1] not in ["Integer Literal", "Float Literal"] or lexemesList[count+3][1] not in ["Integer Literal", "Float Literal"]:
-                displayOnTerminal("Syntax Error: Expecting integer or float literals.\n")
+                syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Expecting integer or float literals.\n")
 
         # checks if a variable is declared before being referenced
         if i[1] == "Variable Identifier" and lexemesList[count-1][0] != "I HAS A":
-            if i[0] not in variableNames:
-                displayOnTerminal("Syntax Error: Variable referenced before definition: " + i[0] + ".\n")
+            if i[0] not in variable_names:
+                syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Variable referenced before definition: '" + i[0] + "'.\n")
         count += 1
 
+    # checks for end of code keyword, prompts user if none found
+    if lexemesList[-1][0] != "KTHXBYE":
+        syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[-1]}]: End of code not found.\n")
+    
+    # print out the syntax errors now
+    for each_error in syntax_error_list:
+        displayOnTerminal(each_error)
 
 def symbolTableAnalyzer(lexemesList):
     '''Function that executes syntax analysis given the list of lexemes.
@@ -137,6 +152,7 @@ def symbolTableAnalyzer(lexemesList):
 
         # CASE OF: arithmetic operations
         if identifier in la.arithmetic_operations:
+
             # variables here
             first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
             second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
@@ -195,9 +211,10 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     fileDirectory = filedialog.askopenfilename()
 
     # reset existing lexemes dictionary
-    global existingLexemesDict, lexemesList, terminal
+    global existingLexemesDict, lexemesList, terminal, existingLexemesDict_newline_reference
     existingLexemesDict = {}
     existingLexemesList = []
+    existingLexemesDict_newline_reference = []
     lexemesList = INITIAL_LEXEMES_LIST
 
     terminal.configure(state = "normal")
@@ -240,27 +257,43 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     current_iterator = la.iterator
     
     # iterate through each token in the tempList
+    current_newline_count = 1
+    print("SLDFKJSKLFJKSDJFKLSDJKLFSDJ")
+    print(tempList)
+    print("SLDFKJSKLFJKSDJFKLSDJKLFSDJ")
     for token in tempList:
         
+        # ignore new lines
+        print(token) 
+        if token == "\n":
+            print("YESSSSSSSSSSSED") 
+            current_newline_count += 1
+            continue
+
         # TODO: tokens after BTW or OBTW still need to show in the lexical analysis
         if token == "\n":
             existingLexemesDict[token] = "Line Break"
             existingLexemesList.append([token, "Line Break"])
 
         # if BTW is encountered, ignore tokens until the end of the line
-        if token == "BTW": btwFlag = True
+        if token == "BTW": 
+            btwFlag = True
+            current_newline_count += 1
+
+        # if BTW keyterm
         elif btwFlag == True:
-            if token == "\n":       btwFlag = False
-            else:                   continue
+            if token == "\n":       
+                btwFlag = False
+                current_newline_count += 1
+                
+            else:
+                continue
 
         # if OBTW is encounted, ignore tokens until TLDR has been reached
         if token == "OBTW": obtwFlag = True
         elif obtwFlag == True:
             if token == "TLDR":     obtwFlag = False
             else:                   continue
-
-        # ignore new lines 
-        if token == "\n": continue
 
         if token == "AN":
             print(f"Got AN lol")
@@ -270,10 +303,12 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
             if re.search("[0-9]\.[0-9]", token) != None:
                 existingLexemesDict[token] = "Float Literal"
                 existingLexemesList.append([token, "Float Literal"])
+                existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
             if re.search("^[0-9]+$", token) != None:
                 existingLexemesDict[token] = "Integer Literal"
                 existingLexemesList.append([token, "Integer Literal"])
+                existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
 
             # if token is "", add a space then continue iterating
@@ -301,9 +336,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
 
                     existingLexemesDict[f"{stringTemp}"] = "String Literal"   # mark it as a string literal
                     existingLexemesList.append([f"{stringTemp}", "String Literal"])
-
-                    existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
-                    existingLexemesList.append(["\"", "String Delimeter"])
+                    existingLexemesDict_newline_reference.append(current_newline_count)
 
                     stringFlag = False  # next token is no longer part of the string
                     stringTemp = ""     # reset
@@ -324,6 +357,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
                     if key_value == "done":
                         existingLexemesDict[stack_string_variable] = la.allKeywords[stack_string_variable]  # update using the stack_string_variable
                         existingLexemesList.append([stack_string_variable, la.allKeywords[stack_string_variable]])
+                        existingLexemesDict_newline_reference.append(current_newline_count)
                         current_iterator = la.iterator                                                      # also update the current_iterator back
                         stack_string_variable = ""                                                          # clear the current string
                     # if there's more afterwards
@@ -334,14 +368,14 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
                     stack_string_variable = ""                          # reset
                     existingLexemesDict[token] = "Variable Identifier"  # treat as variable identifier
                     existingLexemesList.append([token, "Variable Identifier"])
+                    existingLexemesDict_newline_reference.append(current_newline_count)
         # if token is in the lexemes dictionary
         else:
             if token == "AN": print(f"OKAY I GOT AN")
             stack_string_variable = "" 
             existingLexemesDict[token] = la.allKeywords[token]
             existingLexemesList.append([token, la.allKeywords[token]])
-        
-
+            existingLexemesDict_newline_reference.append(current_newline_count)
 
     # reset the lexemesList
     lexemesList = [["Lexemes", "Classification"]]
