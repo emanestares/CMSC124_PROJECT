@@ -152,6 +152,7 @@ def syntaxAnalysis(lexemesList):
         # checks if a variable is declared before being referenced
         if i[1] == "Variable Identifier" and lexemesList[count-1][0] != "I HAS A":
             if i[0] not in variable_names:
+                print(f"Current count is {count}")
                 syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Variable referenced before definition: '" + i[0] + "'.\n")
         
 
@@ -170,77 +171,79 @@ def symbolTableAnalyzer(lexemesList):
     # return value
     ret_list = [["Identifier", "Value"]]
 
-    # variables
-    lexeme_skip_counter = 0
-    current_lexeme_index = -1
+    # ================= This is to be done for next milestone ================
 
-    # do for every lexeme
-    for each_item in lexemesList:
-        # update iterating variable
-        current_lexeme_index += 1
+    # # variables
+    # lexeme_skip_counter = 0
+    # current_lexeme_index = -1
 
-        # this is the identifier 
-        identifier = each_item[0]
+    # # do for every lexeme
+    # for each_item in lexemesList:
+    #     # update iterating variable
+    #     current_lexeme_index += 1
 
-        # skip until lexeme skip counter is not 0
-        if lexeme_skip_counter != 0:
-            print(f"Skipping '{identifier}'")
-            lexeme_skip_counter -= 1
-            continue
+    #     # this is the identifier 
+    #     identifier = each_item[0]
 
-        # just print out cuz why not
-        print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
+    #     # skip until lexeme skip counter is not 0
+    #     if lexeme_skip_counter != 0:
+    #         print(f"Skipping '{identifier}'")
+    #         lexeme_skip_counter -= 1
+    #         continue
+
+    #     # just print out cuz why not
+    #     print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
     
-        # skip HAI and BYE
-        if identifier in ["HAI", "KTHXBYE"]: continue
+    #     # skip HAI and BYE
+    #     if identifier in ["HAI", "KTHXBYE"]: continue
 
-        # CASE OF: variable equalization
-        if identifier == "I HAS A":
+    #     # CASE OF: variable equalization
+    #     if identifier == "I HAS A":
             
-            # if failed, listIndexError means syntactical error
-            try:
+    #         # if failed, listIndexError means syntactical error
+    #         try:
 
-                # variable name is next item, also its value is current index + 3
-                ret_list.append([lexemesList[current_lexeme_index+1][0], f"{get_stringed_number_value(lexemesList[current_lexeme_index+3][0])}"])
+    #             # variable name is next item, also its value is current index + 3
+    #             ret_list.append([lexemesList[current_lexeme_index+1][0], f"{get_stringed_number_value(lexemesList[current_lexeme_index+3][0])}"])
 
-                # should skip 3 more items after this iteration
-                lexeme_skip_counter = 3
+    #             # should skip 3 more items after this iteration
+    #             lexeme_skip_counter = 3
 
-            # if failed, listIndexError means syntactical error
-            except IndexError:
-                print("Syntactical error was found.")
+    #         # if failed, listIndexError means syntactical error
+    #         except IndexError:
+    #             print("Syntactical error was found.")
 
 
-        # CASE OF: arithmetic operations
-        if identifier in la.arithmetic_operations:
+    #     # CASE OF: arithmetic operations
+    #     if identifier in la.arithmetic_operations:
 
-            # variables here
-            first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
-            second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
+    #         # variables here
+    #         first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
+    #         second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
                 
-            # label to put in table
-            arithmetic_label = f"{lexemesList[current_lexeme_index][0]} "
-            arithmetic_label += f"{lexemesList[current_lexeme_index+1][0]} "
-            arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
-            arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
+    #         # label to put in table
+    #         arithmetic_label = f"{lexemesList[current_lexeme_index][0]} "
+    #         arithmetic_label += f"{lexemesList[current_lexeme_index+1][0]} "
+    #         arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
+    #         arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
 
-            match identifier:
-                case "SUM OF":          # addition
-                    ret_list.append([arithmetic_label, f"{first_number+second_number}"])
-                case "MOD OF":          # modulo
-                    ret_list.append([arithmetic_label, f"{first_number%second_number}"])
-                case "QUOSHUNT OF":     # division
-                    ret_list.append([arithmetic_label, f"{first_number/second_number}"])
-                case "SMALLR OF":       # minimum
-                    ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
-                case "BIGGR OF":        # maximum
-                    ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
-                case "DIFF OF":
-                    ret_list.append([arithmetic_label, f"{first_number-second_number}"])
-                case "PRODUKT OF":
-                    ret_list.append([arithmetic_label, f"{first_number*second_number}"])
-                case _:
-                    pass            
+    #         match identifier:
+    #             case "SUM OF":          # addition
+    #                 ret_list.append([arithmetic_label, f"{first_number+second_number}"])
+    #             case "MOD OF":          # modulo
+    #                 ret_list.append([arithmetic_label, f"{first_number%second_number}"])
+    #             case "QUOSHUNT OF":     # division
+    #                 ret_list.append([arithmetic_label, f"{first_number/second_number}"])
+    #             case "SMALLR OF":       # minimum
+    #                 ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
+    #             case "BIGGR OF":        # maximum
+    #                 ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
+    #             case "DIFF OF":
+    #                 ret_list.append([arithmetic_label, f"{first_number-second_number}"])
+    #             case "PRODUKT OF":
+    #                 ret_list.append([arithmetic_label, f"{first_number*second_number}"])
+    #             case _:
+    #                 pass            
 
 
 
@@ -317,7 +320,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     for token in tempList:
         
         # ignore new lines
-        print(token) 
+        print(f"'{token}'") 
         if token == "\n":
             print("YESSSSSSSSSSSED") 
             current_newline_count += 1
@@ -327,6 +330,8 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
         if token == "\n":
             existingLexemesDict[token] = "Line Break"
             existingLexemesList.append([token, "Line Break"])
+            existingLexemesDict_newline_reference.append(current_newline_count)
+            current_newline_count += 1
 
         # if BTW is encountered, ignore tokens until the end of the line
         if token == "BTW": 
@@ -373,6 +378,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
             if token[0] == "\"" and not stringFlag:
                 existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
                 existingLexemesList.append(["\"", "String Delimeter"])
+                existingLexemesDict_newline_reference.append(current_newline_count)
                 stringTemp += token     # append the token
                 stringTemp += " "       # add a space
                 stringFlag = True       # next token will be part of the string
