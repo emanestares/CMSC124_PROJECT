@@ -118,8 +118,8 @@ def syntaxAnalysis(lexemesList):
                     
                     # if proper, add to variable names
                     else:
-                        syntax_error_list.insert(0, f"Syntax Correct [line {existingLexemesDict_newline_reference[count]}].\n")
-                        variable_names.append(lexemesList[count+1][0])
+                        syntax_error_list.insert(0, f"Syntax Correct [line {existingLexemesDict_newline_reference[count]}]. Added '{lexemesList[count+3][0]}' variable.\n")
+                        variable_names.append(lexemesList[count+3][0])
 
 
                 # always go to next line properly
