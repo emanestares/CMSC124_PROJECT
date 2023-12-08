@@ -136,7 +136,7 @@ def syntaxAnalysis(lexemesList):
                 else:
                     current_new_line += 1
                     print(f"token {i[0]} current_new_line that is {current_new_line} == {existingLexemesDict_newline_reference[count]}")
-                    syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Expecting variable declaration or 'BUHBYE' here.\n")
+                    syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count+1]}]: Expecting variable declaration or 'BUHBYE' here.\n")
 
                                 
                 # should continue search til "BUHBYE"
@@ -147,7 +147,7 @@ def syntaxAnalysis(lexemesList):
 
         # checks for a variable name after I HAS A, this is illegal now!
         if i[0] == "I HAS A":
-            syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Cannot instantiate variable outside of declarations clause.\n")
+            syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count+1]}]: Cannot instantiate variable outside of declarations clause.\n")
             
         
         # checks if comparison operation has two arithmetic literals (int, float)
@@ -397,7 +397,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
                 if token[-1] == "\"":
                     stringTemp += token # append the token
                     stringTemp += " "   # add a space
-                    stringTemp = re.search(r'"([^"]*)"', stringTemp).group(1)   # clean the 
+                    stringTemp = re.search(r'[^"]*"([^"]*)"[^"]*', stringTemp).group(1)   # clean the 
 
                     existingLexemesDict[f"{stringTemp}"] = "String Literal"   # mark it as a string literal
                     existingLexemesList.append([f"{stringTemp}", "String Literal"])
