@@ -114,11 +114,11 @@ def syntaxAnalysis(lexemesList):
                     # if improper I HAS A
                     print(f"lexemesList[{count+1+1}][{0}] = {lexemesList[count+1+1][0]}")
                     if lexemesList[count+2+1][0] in la.allKeywords.keys() or lexemesList[count+2+1][0] in la.arithmetic_operations:
-                       syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Expecting variable name.\n")
+                       syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count+1]}]: Expecting variable name.\n")
                     
                     # if proper, add to variable names
                     else:
-                        syntax_error_list.insert(0, f"Syntax Correct [line {existingLexemesDict_newline_reference[count]}]. Added '{lexemesList[count+3][0]}' variable.\n")
+                        syntax_error_list.insert(0, f"Syntax Correct [line {existingLexemesDict_newline_reference[count+1]}]. Added '{lexemesList[count+3][0]}' variable.\n")
                         variable_names.append(lexemesList[count+3][0])
 
 
@@ -294,8 +294,10 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     fileDirLabel.configure(text=fileDirectory.split("/")[-1])
 
     # iterate through file
+    line_count = 0
     for line in inputFile:
-        codeString += line                  # store all lines in codeString  
+        line_count += 1
+        codeString += f'{"{:02d}".format(line_count)}   |     ' + line                  # store all lines in codeString  
 
         if tempList != []:
             tempList += "\n"
