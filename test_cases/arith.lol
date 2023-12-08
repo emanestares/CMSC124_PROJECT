@@ -1,7 +1,10 @@
 HAI 1.2
-	I HAS A x
-	I HAS A y
-	I HAS A answer
+
+	WAZZUP
+		I HAS A x
+		I HAS A y
+		I HAS A answer
+	BUHBYE
 
 	VISIBLE "x: "
 	GIMMEH x

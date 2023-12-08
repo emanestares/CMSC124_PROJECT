@@ -123,7 +123,7 @@ def syntaxAnalysis(lexemesList):
 
 
                 # always go to next line properly
-                elif current_new_line == existingLexemesDict_newline_reference[count]:
+                elif current_new_line != existingLexemesDict_newline_reference[count]:
                     continue
 
                 # if no "I HAS A", skip to next new line
@@ -157,8 +157,9 @@ def syntaxAnalysis(lexemesList):
         
 
     # checks for end of code keyword, prompts user if none found
+    print(f"lexemesList[-1][0]: {lexemesList[-1][0]}")
     if lexemesList[-1][0] != "KTHXBYE":
-        syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[-1]}]: End of code not found.\n")
+        syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[len(existingLexemesDict_newline_reference)-1]}]: End of code not found.\n")
     
     # print out the syntax errors now
     for each_error in syntax_error_list:
