@@ -54,7 +54,9 @@ allKeywords = {
     "GTFO": "Return No Value", 
     "BTW": "Single Line Comment", 
     "OBTW": "Multi Line Comment Start", 
-    "TLDR": "Multi Line Comment End"
+    "TLDR": "Multi Line Comment End", 
+    "WAZZUP": "Start of Variables Declaration", 
+    "BUHBYE": "End of Variables Declaration", 
 }
 
 arithmetic_operations = [
