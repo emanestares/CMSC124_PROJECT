@@ -23,6 +23,8 @@ allKeywords = {
     "NERFIN": "Decrement By One",
     "SUM OF": "Addition Operator",
     "MOD OF": "Modulo Operator",
+    "BOTH OF": "And Operator",
+    "EITHER OF": "Or Operator",
     "WON OF": "XOR Operation",
     "ANY OF": "Or Operator Infinite Args",
     "ALL OF": "And Operator Infinite Args",
@@ -42,7 +44,8 @@ allKeywords = {
     "OMG": "Switch Case Start",
     "TIL": "Loop Execution Continues One More Time If False",
     "WIN": "True Value",
-    "HAI": "Start of code",
+    "HAI": "Start of Code",
+    "NOT": "Negation",
     "AN": "And Operator",
     "YR": "YR Loop Keyword",
     "IT": "IT Keyword",
@@ -151,6 +154,15 @@ iterator = {
         "OF": "done"
     },
     "PRODUKT": {
+        "OF": "done"
+    },
+    "WON": {
+        "OF": "done"
+    },
+    "EITHER": {
+        "OF": "done"
+    },
+    "BOTH": {
         "OF": "done"
     }
 }
