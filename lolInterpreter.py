@@ -80,16 +80,71 @@ def syntaxAnalysis(lexemesList):
         print("wow")
         syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[0]}]: Start of code not found.\n")
 
+    print(f"{len(lexemesList)} vs {len(existingLexemesDict_newline_reference)}")
+
+    for i in range(1,len(lexemesList)):
+        print(f"token '{lexemesList[i][0]}': {existingLexemesDict_newline_reference[i-1]}")
+    
     # go through the other items
-    count = 0
+    count = -1
+    variables_initialized, initializing, should_skip = False, False, False
+    current_new_line = 2
+
     for i in lexemesList[2:-1]:
-        print(f"OKAY GOT: '{i}'")
-        # checks for a variable name after I HAS A
+        count += 1    
+
+        # if variables are not yet initialized
+        if not variables_initialized:
+
+            # start of variable initialization
+            if i[0] == "WAZZUP":
+                initializing = True
+                continue
+
+            # end the variable initialization
+            if i[0] == "BUHBYE":
+                variables_initialized = True
+                continue
+
+            # variable initialization starts here
+            if initializing:    
+
+                # check for variable name after I HAS A
+                if i[0] == "I HAS A":
+                    current_new_line += 1
+
+                    # if improper I HAS A
+                    print(f"lexemesList[{count+1+1}][{0}] = {lexemesList[count+1+1][0]}")
+                    if lexemesList[count+2+1][0] in la.allKeywords.keys() or lexemesList[count+2+1][0] in la.arithmetic_operations:
+                       syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Expecting variable name.\n")
+                    
+                    # if proper, add to variable names
+                    else:
+                        syntax_error_list.insert(0, f"Syntax Correct [line {existingLexemesDict_newline_reference[count]}].\n")
+                        variable_names.append(lexemesList[count+1][0])
+
+
+                # always go to next line properly
+                elif current_new_line == existingLexemesDict_newline_reference[count]:
+                    continue
+
+                # if no "I HAS A", skip to next new line
+                else:
+                    current_new_line += 1
+                    print(f"token {i[0]} current_new_line that is {current_new_line} == {existingLexemesDict_newline_reference[count]}")
+                    syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Expecting variable declaration or 'BUHBYE' here.\n")
+
+                                
+                # should continue search til "BUHBYE"
+                continue
+
+            # if nothing happened, proceed next
+
+
+        # checks for a variable name after I HAS A, this is illegal now!
         if i[0] == "I HAS A":
-            if lexemesList[count+1][0] in la.allKeywords.keys() or lexemesList[count+1][0] in la.arithmetic_operations or not lexemesList[count+1][0][0].isalpha():
-                syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Expecting variable name.\n")
-            else:
-                variable_names.append(lexemesList[count+1][0])
+            syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Cannot instantiate variable outside of declarations clause.\n")
+            
         
         # checks if comparison operation has two arithmetic literals (int, float)
         if i[0] in la.arithmetic_operations:
@@ -100,7 +155,7 @@ def syntaxAnalysis(lexemesList):
         if i[1] == "Variable Identifier" and lexemesList[count-1][0] != "I HAS A":
             if i[0] not in variable_names:
                 syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count]}]: Variable referenced before definition: '" + i[0] + "'.\n")
-        count += 1
+        
 
     # checks for end of code keyword, prompts user if none found
     if lexemesList[-1][0] != "KTHXBYE":
@@ -143,11 +198,20 @@ def symbolTableAnalyzer(lexemesList):
 
         # CASE OF: variable equalization
         if identifier == "I HAS A":
-            # variable name is next item, also its value is current index + 3
-            ret_list.append([lexemesList[current_lexeme_index+1][0], f"{get_stringed_number_value(lexemesList[current_lexeme_index+3][0])}"])
+            
+            # if failed, listIndexError means syntactical error
+            try:
 
-            # should skip 3 more items after this iteration
-            lexeme_skip_counter = 3
+                # variable name is next item, also its value is current index + 3
+                ret_list.append([lexemesList[current_lexeme_index+1][0], f"{get_stringed_number_value(lexemesList[current_lexeme_index+3][0])}"])
+
+                # should skip 3 more items after this iteration
+                lexeme_skip_counter = 3
+
+            # if failed, listIndexError means syntactical error
+            except IndexError:
+                print("Syntactical error was found.")
+
 
         # CASE OF: arithmetic operations
         if identifier in la.arithmetic_operations:
@@ -155,7 +219,7 @@ def symbolTableAnalyzer(lexemesList):
             # variables here
             first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
             second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
-
+                
             # label to put in table
             arithmetic_label = f"{lexemesList[current_lexeme_index][0]} "
             arithmetic_label += f"{lexemesList[current_lexeme_index+1][0]} "
@@ -178,7 +242,9 @@ def symbolTableAnalyzer(lexemesList):
                 case "PRODUKT OF":
                     ret_list.append([arithmetic_label, f"{first_number*second_number}"])
                 case _:
-                    pass            
+                    pass  
+
+
 
     print(f"Results: {ret_list}")
     return ret_list
@@ -277,9 +343,6 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
         elif obtwFlag == True:
             if token == "TLDR":     obtwFlag = False
             else:                   continue
-
-        if token == "AN":
-            print(f"Got AN lol")
 
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
