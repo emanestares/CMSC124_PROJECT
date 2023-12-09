@@ -26,7 +26,9 @@ def analyze(lexemesList):
   keyWord = ""
   lineNumber = 1
 
-  print(lexemesList)
+  # TODO: for testing; should be removed
+  # print(lexemesList)
+  print("\n[!] Analyze Module Output: ")
 
   if lexemesList[0][0] != "HAI":
     print("Syntax Error in line " + str(lineNumber) + " : Start of code not found.\n")

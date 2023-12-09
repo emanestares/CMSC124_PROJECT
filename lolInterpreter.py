@@ -18,6 +18,9 @@ import lexicalAnalyzer as la
 import syntacticalAnalyzer as grammar
 import re
 
+# TODO: finalize this; test
+import syntacticalAnalyzerTest as parser
+
 # define static variables
 INITIAL_LEXEMES_LIST = [["Lexemes", "Classification"]]
 
@@ -78,13 +81,17 @@ def syntaxAnalysis(lexemesList):
 
     # checks for start of code keyword, prompts user if none found
     if lexemesList[1][0] != "HAI":
-        print("wow")
+        # TODO: for testing; should be removed
+        # print("wow")
+
         syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[0]}]: Start of code not found.\n")
 
     # go through the other items
     count = 0
     for i in lexemesList[2:-1]:
-        print(f"OKAY GOT: '{i}'")
+        # TODO: for testing; should be removed
+        # print(f"OKAY GOT: '{i}'")
+
         # checks for a variable name after I HAS A
         if i[0] == "I HAS A":
             if lexemesList[count+1][0] in la.allKeywords.keys() or lexemesList[count+1][0] in la.arithmetic_operations or not lexemesList[count+1][0][0].isalpha():
@@ -132,12 +139,15 @@ def symbolTableAnalyzer(lexemesList):
 
         # skip until lexeme skip counter is not 0
         if lexeme_skip_counter != 0:
-            print(f"Skipping '{identifier}'")
+            # TODO: for testing; should be removed
+            # print(f"Skipping '{identifier}'")
+
             lexeme_skip_counter -= 1
             continue
 
+        # TODO: for testing; should be removed
         # just print out cuz why not
-        print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
+        # print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
     
         # skip HAI and BYE
         if identifier in ["HAI", "KTHXBYE"]: continue
@@ -191,7 +201,7 @@ def symbolTableAnalyzer(lexemesList):
             elif identifier == "PRODUKT OF":
                 ret_list.append([arithmetic_label, f"{first_number*second_number}"])
 
-    print(f"Results: {ret_list}")
+    print(f"\nResults: {ret_list}")
     return ret_list
 
 
@@ -245,8 +255,9 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
 
         tempList += line.strip().split(" ")    # split on spaces then add each to the tempList
 
+    # TODO: for testing; should be removed
     # display tempList
-    print(f"Templist: {tempList}\n")
+    # print(f"Templist: {tempList}\n")
 
     # variable that stores the current string for strings with two or more values
     # this will be empty if placed in dictionary, else not empty
@@ -258,22 +269,25 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     
     # iterate through each token in the tempList
     current_newline_count = 1
-    print("SLDFKJSKLFJKSDJFKLSDJKLFSDJ")
-    print(tempList)
-    print("SLDFKJSKLFJKSDJFKLSDJKLFSDJ")
+
+    # TODO: for testing; should be removed
+    # print("SLDFKJSKLFJKSDJFKLSDJKLFSDJ")
+    # print(tempList)
+    # print("SLDFKJSKLFJKSDJFKLSDJKLFSDJ")
+    
     for token in tempList:
         
-        # ignore new lines
-        print(token) 
-        if token == "\n":
-            print("YESSSSSSSSSSSED") 
-            current_newline_count += 1
-            continue
+        # # ignore new lines
+        # print(token) 
+        # if token == "\n":
+        #     print("YESSSSSSSSSSSED") 
+        #     current_newline_count += 1
+        #     continue
 
         # TODO: tokens after BTW or OBTW still need to show in the lexical analysis
-        if token == "\n":
-            existingLexemesDict[token] = "Line Break"
-            existingLexemesList.append([token, "Line Break"])
+        # if token == "\n":
+        #     existingLexemesDict[token] = "Line Break"
+        #     existingLexemesList.append([token, "Line Break"])
 
         # if BTW is encountered, ignore tokens until the end of the line
         if token == "BTW": 
@@ -285,18 +299,26 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
             if token == "\n":       
                 btwFlag = False
                 current_newline_count += 1
-                
             else:
+                existingLexemesDict[token] = "Comment"
+                existingLexemesList.append([token, "Comment"])
+                existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
 
         # if OBTW is encounted, ignore tokens until TLDR has been reached
         if token == "OBTW": obtwFlag = True
         elif obtwFlag == True:
-            if token == "TLDR":     obtwFlag = False
-            else:                   continue
+            if token == "TLDR":     
+                obtwFlag = False
+            else:
+                existingLexemesDict[token] = "Comment"
+                existingLexemesList.append([token, "Comment"])          
+                existingLexemesDict_newline_reference.append(current_newline_count)         
+                continue
 
-        if token == "AN":
-            print(f"Got AN lol")
+        # TODO: for testing; should be removed
+        # if token == "AN":
+        #     print(f"Got AN lol")
 
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
@@ -336,6 +358,10 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
 
                     existingLexemesDict[f"{stringTemp}"] = "String Literal"   # mark it as a string literal
                     existingLexemesList.append([f"{stringTemp}", "String Literal"])
+
+                    existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
+                    existingLexemesList.append(["\"", "String Delimeter"])
+                    
                     existingLexemesDict_newline_reference.append(current_newline_count)
 
                     stringFlag = False  # next token is no longer part of the string
@@ -371,7 +397,9 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
                     existingLexemesDict_newline_reference.append(current_newline_count)
         # if token is in the lexemes dictionary
         else:
-            if token == "AN": print(f"OKAY I GOT AN")
+            # TODO: for testing; should be removed
+            # if token == "AN": print(f"OKAY I GOT AN")
+
             stack_string_variable = "" 
             existingLexemesDict[token] = la.allKeywords[token]
             existingLexemesList.append([token, la.allKeywords[token]])
@@ -396,13 +424,25 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
 
     lexemesLabel = tk.CTkLabel(lexemesFrame,text= "Lexemes")
     lexemesLabel.pack(expand=True, fill="both", padx=5)
-    print(f"Lexemes List: {lexemesList}\n")
+
+    # TODO: for testing; should be removed
+    # print(f"Lexemes List: {lexemesList}\n")
+    
     lexemesTable = CTkTable(lexemesFrame, row = len(lexemesList), column = 2, values = lexemesList)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
 
+    # TODO: for testing; should be removed
+    # print("Lexemes: \n")
+    # [print(x) for x in lexemesList]
+
+    # TODO: for testing; should be removed
+    print("[!] DO TRAVERSAL")
+    new_parser = parser.Parser(lexemesList[1:])
+    new_parser.traverse_tokens()
+
     # execute analysis on the lexemes
     returnStatus = syntaxAnalysis(lexemesList)
-    grammar.analyze(existingLexemesList)
+    # grammar.analyze(existingLexemesList)
     symbol_table_results = symbolTableAnalyzer(lexemesList)
 
     for widget in symbolTableFrame.winfo_children(): widget.destroy()

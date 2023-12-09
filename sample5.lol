@@ -1,5 +1,5 @@
 HAI
-    I HAS A BIGGR OF ITZ 12
+    I HAS A var ITZ 12
     var R 11
     VISIBLE "noot    noot" var 
     OBTW 
@@ -7,7 +7,7 @@ HAI
         test test test test
     TLDR
     BIGGR OF 10 AN 100
-    HOW IZ I MAINUMBA YR one YR two
+    HOW IZ I MAINUMBA
         I HAS A var 
         BTW test 
         FOUND YR var2
