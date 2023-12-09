@@ -60,6 +60,7 @@ allKeywords = {
     "TLDR": "Multi Line Comment End", 
     "WAZZUP": "Start of Variables Declaration", 
     "BUHBYE": "End of Variables Declaration", 
+    "\n": "Line Break"
 }
 
 arithmetic_operations = [
