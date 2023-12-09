@@ -307,11 +307,14 @@ class Parser:
 
             # print recognized tokens that are not linebreaks or comments
             # TODO: the print lines below if output is not needed
-            if (current_token[1] == "Start of Code" or current_token[1] == "Line Break"): 
-                if not self.MODE_MULTI_LINE_COMMENT: print(f"\nLine #{self.line_count}")
-                self.increment_line_count()
-            elif current_token[1] == "Multi Line Comment End": print(f"\nLine #{self.line_count-1}")
-            if not(current_token[1] == "Line Break" or current_token[1] == "Comment"): print(f"[!] {current_token[1]}".ljust(25), "->", current_token[0].replace("\n", r"\n"))
+            if (current_token[1] == "Start of Code" or (self.cursor > 1 and self.lexemesList[self.cursor-1][1] == "Line Break")):
+                if current_token[1] == "Comment": 
+                    self.increment_line_count()
+                else:
+                    print(f"\nLine #{self.line_count}".ljust(15) + f"[!] {current_token[1]}".ljust(30), "->", current_token[0].replace("\n", r"\n"))
+                    self.increment_line_count()
+            elif not (current_token[1] == "Line Break" or current_token[1] == "Comment"):
+                print("".ljust(14) + f"[!] {current_token[1]}".ljust(30), "->", current_token[0].replace("\n", r"\n"))
 
             # go to next token
             self.increment_cursor()

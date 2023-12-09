@@ -492,16 +492,12 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     # print(f"Lexemes List: {lexemesList}\n")
     
     filtered_lexeme_list = [x for x in lexemesList if not(x[1]== "Line Break" or x[1]=="Comment")]
-
     lexemesTable = CTkTable(lexemesFrame, row = len(lexemesList), column = 2, values = filtered_lexeme_list)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
 
-    # TODO: for testing; should be removed
-    # print("Lexemes: \n")
-    # [print(x) for x in lexemesList]
 
     # TODO: for testing; should be removed
-    print("[!] DO TRAVERSAL")
+    print("\n\n#--------------------------- [!] DO TRAVERSAL [!] --------------------------- #")
     new_parser = parser.Parser(lexemesList[1:])
     new_parser.traverse_tokens()
 
