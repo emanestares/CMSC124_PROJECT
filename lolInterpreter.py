@@ -205,22 +205,6 @@ def symbolTableAnalyzer(lexemesList):
     #     # this is the identifier 
     #     identifier = each_item[0]
 
-        # skip until lexeme skip counter is not 0
-        if lexeme_skip_counter != 0:
-            # TODO: for testing; should be removed
-            # print(f"Skipping '{identifier}'")
-
-            lexeme_skip_counter -= 1
-            continue
-
-        # TODO: for testing; should be removed
-        # just print out cuz why not
-        # print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
-    
-        # skip HAI and BYE
-        if identifier in ["HAI", "KTHXBYE"]: continue
-
-
     #     # skip until lexeme skip counter is not 0
     #     if lexeme_skip_counter != 0:
     #         print(f"Skipping '{identifier}'")
@@ -281,9 +265,7 @@ def symbolTableAnalyzer(lexemesList):
     #             case _:
     #                 pass            
 
-
-
-    print(f"\nResults: {ret_list}")
+    # print(f"\nResults: {ret_list}")
     return ret_list
 
 
@@ -360,8 +342,6 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     # print("SLDFKJSKLFJKSDJFKLSDJKLFSDJ")
     
     for token in tempList:
-        
-
         # # ignore new lines
         # print(token) 
         # if token == "\n":
@@ -511,7 +491,9 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     # TODO: for testing; should be removed
     # print(f"Lexemes List: {lexemesList}\n")
     
-    lexemesTable = CTkTable(lexemesFrame, row = len(lexemesList), column = 2, values = lexemesList)
+    filtered_lexeme_list = [x for x in lexemesList if not(x[1]== "Line Break" or x[1]=="Comment")]
+
+    lexemesTable = CTkTable(lexemesFrame, row = len(lexemesList), column = 2, values = filtered_lexeme_list)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
 
     # TODO: for testing; should be removed
@@ -524,7 +506,9 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     new_parser.traverse_tokens()
 
     # execute analysis on the lexemes
-    returnStatus = syntaxAnalysis(lexemesList)
+
+    # [!] ENABLE IF NEEDED:
+    # returnStatus = syntaxAnalysis(lexemesList)
     # grammar.analyze(existingLexemesList)
     symbol_table_results = symbolTableAnalyzer(lexemesList)
 
