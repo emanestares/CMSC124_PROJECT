@@ -81,9 +81,6 @@ def syntaxAnalysis(lexemesList):
 
     # checks for start of code keyword, prompts user if none found
     if lexemesList[1][0] != "HAI":
-        # TODO: for testing; should be removed
-        # print("wow")
-
         syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[0]}]: Start of code not found.\n")
 
     print(f"{len(lexemesList)} vs {len(existingLexemesDict_newline_reference)}")
@@ -152,12 +149,6 @@ def syntaxAnalysis(lexemesList):
 
 
         # checks for a variable name after I HAS A, this is illegal now!
-
-        # TODO: for testing; should be removed
-        # print(f"OKAY GOT: '{i}'")
-
-        # checks for a variable name after I HAS A
-
         if i[0] == "I HAS A":
             syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count+1]}]: Cannot instantiate variable outside of declarations clause.\n")
             
@@ -321,9 +312,6 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
 
         tempList += line.strip().split(" ")    # split on spaces then add each to the tempList
 
-    # TODO: for testing; should be removed
-    # display tempList
-    # print(f"Templist: {tempList}\n")
 
     # variable that stores the current string for strings with two or more values
     # this will be empty if placed in dictionary, else not empty
@@ -335,26 +323,8 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     
     # iterate through each token in the tempList
     current_newline_count = 1
-
-    # TODO: for testing; should be removed
-    # print("SLDFKJSKLFJKSDJFKLSDJKLFSDJ")
-    # print(tempList)
-    # print("SLDFKJSKLFJKSDJFKLSDJKLFSDJ")
     
     for token in tempList:
-        # # ignore new lines
-        # print(token) 
-        # if token == "\n":
-        #     print("YESSSSSSSSSSSED") 
-        #     current_newline_count += 1
-        #     continue
-
-        # TODO: tokens after BTW or OBTW still need to show in the lexical analysis
-        # if token == "\n":
-        #     existingLexemesDict[token] = "Line Break"
-        #     existingLexemesList.append([token, "Line Break"])
-
-
         # if BTW is encountered, ignore tokens until the end of the line
         if token == "BTW": 
             btwFlag = True
@@ -399,9 +369,6 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
             if token == "":
                 stringTemp += " "
                 continue            
-            
-            # TODO: string delimiters show up as seperate entites in the lexemes table;
-            # TODO: that is, "-string delimiter, <text>-string literal, "-string delimiter
 
             # if the first character of the token is '\"', then it is part of a string literal 
             if token[0] == "\"" and not stringFlag:
@@ -432,7 +399,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
                 # the string is still unclosed, add it to stringTemp
                 else:
                     stringTemp += token # append the token
-                    print(stringTemp)
+                    # print(stringTemp)
             # not a string literal
             else:
                 # update the stack variable for string
@@ -460,9 +427,6 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
                     existingLexemesDict_newline_reference.append(current_newline_count)
         # if token is in the lexemes dictionary
         else:
-            # TODO: for testing; should be removed
-            # if token == "AN": print(f"OKAY I GOT AN")
-
             stack_string_variable = "" 
             existingLexemesDict[token] = la.allKeywords[token]
             existingLexemesList.append([token, la.allKeywords[token]])
@@ -483,18 +447,13 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     
     for widget in lexemesFrame.winfo_children(): widget.destroy()
 
-    # TODO: I think dapat lahat ng lexemes ipriprint in order, hindi mga unique occurences lang
-
     lexemesLabel = tk.CTkLabel(lexemesFrame,text= "Lexemes")
     lexemesLabel.pack(expand=True, fill="both", padx=5)
 
-    # TODO: for testing; should be removed
-    # print(f"Lexemes List: {lexemesList}\n")
-    
+    # do not added Line Breaks or Comments to the lexemesTable
     filtered_lexeme_list = [x for x in lexemesList if not(x[1]== "Line Break" or x[1]=="Comment")]
     lexemesTable = CTkTable(lexemesFrame, row = len(lexemesList), column = 2, values = filtered_lexeme_list)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
-
 
     # TODO: for testing; should be removed
     print("\n\n#--------------------------- [!] DO TRAVERSAL [!] --------------------------- #")

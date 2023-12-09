@@ -306,7 +306,7 @@ class Parser:
             if not self.evaluate(current_token[1]): break
 
             # print recognized tokens that are not linebreaks or comments
-            # TODO: the print lines below if output is not needed
+            # TODO: delete the print lines below if output is not needed
             if (current_token[1] == "Start of Code" or (self.cursor > 1 and self.lexemesList[self.cursor-1][1] == "Line Break")):
                 if current_token[1] == "Comment": 
                     self.increment_line_count()
@@ -328,10 +328,7 @@ class Parser:
                      
 def main():
     parser_obj = Parser(test_case)
-
-    # parser_obj.print_tokens()
     parser_obj.traverse_tokens()
-    # parser_obj.traverse_nodes()
 
 if __name__ == "__main__":
     main()
