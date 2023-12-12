@@ -46,7 +46,7 @@ allKeywords = {
     "WIN": "True Value",
     "HAI": "Start of Code",
     "NOT": "Negation",
-    "AN": "And Operator",
+    "AN": "An Keyword",
     "YR": "YR Loop Keyword",
     "IT": "IT Keyword",
     "R": "R Keyword",
@@ -60,6 +60,7 @@ allKeywords = {
     "TLDR": "Multi Line Comment End", 
     "WAZZUP": "Start of Variables Declaration", 
     "BUHBYE": "End of Variables Declaration", 
+    "MKAY" : "Infinite Arity End",
     "\n": "Line Break"
 }
 

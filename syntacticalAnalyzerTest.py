@@ -1,334 +1,369 @@
 # SAMPLE TEST; TO BE DELETED
-test_case = [['HAI', 'Start of Code'], ['\n', 'Line Break'], ['I HAS A', 'Variable Declaration'], ['stuff', 'Variable Identifier'], ['ITZ', 'Assignment Operator'], ['12', 'Integer Literal'], ['\n', 'Line Break'], ['VISIBLE', 'Print Statement'], ['"', 'String Delimeter'], ['noot    noot', 'String Literal'], ['"', 'String Delimeter'], ['var', 'Variable Identifier'], ['\n', 'Line Break'], ['BIGGR OF', 'Bigger Of'], ['dsfd', 'Variable Identifier'], ['AN', 'And Operator'], ['dsfdf', 'Variable Identifier'], ['\n', 'Line Break'], ['KTHXBYE', 'End of Code']]
+test_case = [['HAI', 'Start of Code'], ['\n', 'Line Break'], ['I HAS A', 'Variable Declaration'], ['var', 'Variable Identifier'], ['ITZ', 'Assignment Operator'], ['12', 'Integer Literal'], ['\n', 'Line Break'], ['I HAS A', 'Variable Declaration'], ['var', 'Variable Identifier'], ['ITZ', 'Assignment Operator'], ['12', 'Integer Literal'], ['BTW', 'Single Line Comment'], ['test', 'Comment'], ['\n', 'Line Break'], ['var', 'Variable Identifier'], ['R', 'R Keyword'], ['11', 'Integer Literal'], ['\n', 'Line Break'], ['VISIBLE', 'Print Statement'], ['"', 'String Delimeter'], ['noot    noot', 'String Literal'], ['"', 'String Delimeter'], ['var', 'Variable Identifier'], ['\n', 'Line Break'], ['OBTW', 'Multi Line Comment Start'], ['\n', 'Line Break'], ['test', 'Comment'], ['\n', 'Line Break'], ['test', 'Comment'], ['test', 'Comment'], ['test', 'Comment'], ['test', 'Comment'], ['\n', 'Line Break'], ['TLDR', 'Multi Line Comment End'], ['\n', 'Line Break'], ['BIGGR OF', 'Bigger Of'], ['10', 'Integer Literal'], ['AN', 'An Keyword'], ['100', 'Integer Literal'], ['\n', 'Line Break'], ['HOW IZ I', 'Function Start'], ['MAINUMBA', 'Variable Identifier'], ['\n', 'Line Break'], ['I HAS A', 'Variable Declaration'], ['var', 'Variable Identifier'], ['\n', 'Line Break'], ['BTW', 'Single Line Comment'], ['test', 'Comment'], ['\n', 'Line Break'], ['FOUND YR', 'Return Expression'], ['var2', 'Variable Identifier'], ['\n', 'Line Break'], ['IF U SAY SO', 'Function End'], ['\n', 'Line Break'], ['KTHXBYE', 'End of Code']]
 
-# GRAMMAR TRANSITIONS
-PROGRAM                 = ["Start of Code"]
-STATEMENT               = ["Variable Declaration", "Print Statement", "Assignment Operator"]
-ARITHMETIC_OPERATOR     = ["Addition Operator", "Modulo Operator", "Division Operator", "Smaller Of", "Subtraction Operator", "Multiplication Operator", "Bigger Of"]
-VARIABLE_IDENTIFIER     = ["Variable Identifier"]
-LITERAL                 = ["Integer Literal", "Float Literal", "String Literal"]
-EXPRESSION              = ["True Expression", "False Expresion", "Variable Identifier"]
-STRING_DELIMETER        = ["String Delimeter"]
-LINE_BREAK              = ["Line Break"]
-AND_OPERATOR            = ["And Operator"]
-END_OF_CODE             = ["End of Code"]
-COMMENT                 = ["Comment"]
-COMMENT_START           = ["Single Line Comment", "Multi Line Comment Start"]
-COMMENT_END             = ["Multi Line Comment End"]
-R_KEYWORD               = ["R Keyword"]
-FUNCTION_START          = ["Function Start"]
-YR_LOOP_KEYWORD         = ["YR Loop Keyword"]
-RETURN_EXPRESSION       = ["Return Expression"]
-FUNCTION_END            = ["Function End"]
+# TODO: recognize commas
+
+# TODO:
+# [ ] unary opeartors
+# [ ] check if operator is binary or has infinite arity
+#   - check arithmetic operators
+# [ ] booleans:
+#   unary:      NOT <x>
+#   binary:     BOTH OF <x> [AN] <y>
+#               EITHER OF <x> [AN] <y>
+#               WON OF <x> [AN] <y>
+#   infinite:   ALL OF <x> [AN] <y> ... MKAY
+#               ANY OF <x> [AN] <y> ... MKAY
+# [ ] comparison:
+#   binary:     BOTH SAEM <x> [AN] <y>
+#               DIFFRINT <x> [AN] <y>
+#   special:    <expression>, DIFFRINT IT AN SMALLR OF IT AN <y>
+# [ ] casting:
+#   MAEK <expression> [A] <type>
+#   <variable> IS NOW A <type>
+#   <variable> R MAEK <variable> [A] <type>
+# [ ] IO:
+#   VISIBLE: recognize "!" character
+#   GIMMEH: implement
+#       GIMMEH <variable>
+# [ ] IT variable:
+#   expressions unassigned will be put in a variable called "IT"
+#   gets overwritten for each expresion that was not assigned to a variable
+# [X] Assigment statements:
+#   double check implementation, should be of the form: <variable> <assignment operator> <expression>
+# [ ] FLOW CONTROL:
+#   if-then:
+#       <expression>
+#       O RLY?
+#       YA RLY
+#           <code block>
+#       NO WAI
+#           <code block>
+#       OIC
+#   case:
+#   loops:
+
+# TODO: VERY IMPORTANT
+# - turn production into parse tree format
+# - turn line breaks into terminals for each node
+# - define format for each node
 
 class Node:
-    def __init__(self, value):
+    def __init__(self, value, lchild, rchild):
         self.value = value
-        self.parent = None
-        self.lchild = None
-        self.rchild = None
+        self.lchild = lchild
+        self.rchild = rchild
 
-    def print_node(node):
-        # print value of node
-        print(f"\nValue: {node.value}")
+    def print_info(self):
+        if self.value == "Line Break": return
 
-        # print node details
-        if node.value != "Parser": print(f"Parent: {node.parent.value}")
-        if node.lchild is not None: print(f"LChild: {node.lchild.value}")
-        if node.rchild is not None: print(f"RChild: {node.rchild.value}")
+        # print value
+        print(f"<TYPE: {self.value}> ", end="")
+              
+        # print lchild
+        if type(self.lchild) == list:
+            print("<lchild: [ \n", end="")
+            [(print("".ljust(4), end=""), x.print_info()) for x in self.lchild if x.value != "Line Break"]
+            print("\t]> ", end = "")
+        else:
+            print(f"<lchild: {self.lchild}> ", end= "")
 
-        # print children of node
-        if node.lchild is not None: Node.print_node(node.lchild)
-        if node.rchild is not None: Node.print_node(node.rchild)
+        # print rchild
+        if type(self.rchild) == list: 
+            print(f"<rchild: [ \n", end = "")
+            [(print("".ljust(4), end=""), x.print_info()) for x in self.rchild if x.value != "Line Break"]
+            print("\t]>")
+        else: 
+            print(f"<rchild: {self.rchild}> ")
+
+
+# TOKEN CLASS
+TOK_START_OF_CODE = "Start of Code"
+TOK_END_OF_CODE = "End of Code"
+
+TOK_VARIABLE_IDENTIFIER = "Variable Identifier"
+TOK_ASSIGMENT_OPERATOR = "Assignment Operator"
+TOK_VARIABLE_DECLARATION = "Variable Declaration"
+TOK_PRINT_STATEMENT = "Print Statement"
+TOK_RETURN_EXPRESSION = "Return Expression"
+TOK_FUNCTION_START = "Function Start"
+TOK_FUNCTION_END = "Function End"
+TOK_R_KEYWORD = "R Keyword"
+TOK_AN_KEYWORD = "An Keyword"
+TOK_YR_KEYWORD = "YR Loop Keyword"
+TOK_STRING_DELIMETER = "String Delimeter"
+
+TOK_SINGLE_LINE_COMMENT = "Single Line Comment"
+TOK_MULTI_LINE_COMMENT_START = "Multi Line Comment Start"
+TOK_MULTI_LINE_COMMENT_END = "Multi Line Comment End"
+TOK_COMMENT_START = [TOK_SINGLE_LINE_COMMENT, TOK_MULTI_LINE_COMMENT_START]
+
+TOK_LINE_BREAK = "Line Break"
+TOK_COMMENT = "Comment"
+TOK_LINE_ENDING = [TOK_SINGLE_LINE_COMMENT, TOK_MULTI_LINE_COMMENT_START, TOK_LINE_BREAK]
+
+TOK_INTEGER_LITERAL = "Integer Literal"
+TOK_FLOAT_LITERAL = "Float Literal"
+TOK_STRING_LITERAL = "String Literal"
+TOK_NON_STRING_LITERAL = [TOK_INTEGER_LITERAL, TOK_FLOAT_LITERAL] 
+TOK_LITERAL = [TOK_INTEGER_LITERAL, TOK_FLOAT_LITERAL, TOK_STRING_LITERAL]
+
+TOK_ADDITION        = "Addition Operator"
+TOK_SUBTRACTION     = "Subtraction Operator" 
+TOK_MULTIPLICATION  = "Multiplication Operator"
+TOK_DIVISION        = "Division Operator"
+TOK_MODULO          = "Modulo Operator"
+TOK_SMALLER_OF      = "Smaller Of"
+TOK_BIGGER_OF       = "Bigger Of"
+
+TOK_ARITHMETIC = [TOK_ADDITION, TOK_SUBTRACTION, TOK_MULTIPLICATION, TOK_DIVISION, TOK_MODULO, TOK_SMALLER_OF, TOK_BIGGER_OF]
+
+TOK_BANNED_FUNCTION = [TOK_FUNCTION_START, TOK_START_OF_CODE]
+
+# TODO: Simplify
+# example:
+# I HAS A <var> ITZ <expr> = Node(Variable Declaration, self.var(), self.expr)
+
+# GRAMMAR
+G_START_OF_CODE         = [TOK_START_OF_CODE]
+G_VARIABLE_DECLARATION  = [[TOK_VARIABLE_DECLARATION, TOK_VARIABLE_IDENTIFIER, TOK_ASSIGMENT_OPERATOR, TOK_LITERAL],
+                            [TOK_VARIABLE_DECLARATION, TOK_VARIABLE_IDENTIFIER]]
+G_VARIABLE_ASSIGNMENT   = [TOK_VARIABLE_IDENTIFIER, TOK_R_KEYWORD, TOK_LITERAL]
+G_LINE_ENDING           = [[TOK_LINE_BREAK],
+                            [TOK_SINGLE_LINE_COMMENT, TOK_COMMENT],
+                            [TOK_MULTI_LINE_COMMENT_START, TOK_COMMENT]]
+G_END_OF_CODE           = [TOK_END_OF_CODE]
+G_ARITHMETIC            = [TOK_ARITHMETIC, [*TOK_NON_STRING_LITERAL, TOK_VARIABLE_IDENTIFIER], TOK_AN_KEYWORD, [*TOK_NON_STRING_LITERAL, TOK_VARIABLE_IDENTIFIER]]
+G_RETURN_EXPRESSION     = [TOK_RETURN_EXPRESSION, [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER]]
 
 class Parser:
     def __init__(self, lexemesList):
         # initial values
         self.lexemesList = lexemesList
         self.length = len(self.lexemesList)
+
         self.cursor = 0
         self.line_count = 1
-        self.program_start_node = Node("Parser")
-        self.expectation = PROGRAM
 
-        # Flags for checking
-        self.MODE_I_HAS_A = False
-        self.MODE_VISIBLE = False
-        self.MODE_ARITHMETIC = False
-        self.MODE_SINGLE_LINE_COMMENT = False
-        self.MODE_MULTI_LINE_COMMENT = False
-        self.MODE_FUNCTION = False
+        self.buf = []
+        self.error = False
+        self.supress_error = False
 
-    # Reset most flags
-    def reset_modes(self):
-        self.MODE_I_HAS_A = False
-        self.MODE_VISIBLE = False
-        self.MODE_ARITHMETIC = False
-        self.MODE_SINGLE_LINE_COMMENT = False
-        # self.MODE_MULTI_LINE_COMMENT -> Cannot be reset
-        self.MODE_FUNCTION = False
+    # cursor keeps track of which token is currently being analyzed; important for some tokens; increments cursor
+    def increment_cursor(self): self.cursor += 1
 
-    # cursor keeps track of which token is currently being analyzed; important for some tokens
-    # increments cursor
-    def increment_cursor(self):
-        self.cursor += 1
+    # line_count keeps track of which current line the analyzer is in; increments line count
+    def increment_line_count(self): self.line_count += 1   
 
-    # line_count keeps track of which current line the analyzer is in
-    # increments line count
-    def increment_line_count(self):
-        self.line_count += 1
+    # print error message
+    def throw_error(self, got, expected): print(f"[!] Error: Got {got}, Expected {expected}.")
 
-    # TODO: fix
+    # buf used for certain token recognitions
+    def reset_buf(self): self.buf = []
+
+    # return a token
+    def get_token(self): return self.lexemesList[self.cursor]
+
+    # return a token class
+    def get_token_class(self): return self.lexemesList[self.cursor][1]
+
+    # return the nexgt token class
+    def get_next_token_class(self): return self.lexemesList[self.cursor+1][1] if self.cursor+1 != self.length else "Error"
+
+    # handle error
+    def return_error(self):
+        self.error = True
+        return Node("ERROR", ";", ";")
+
+    # check if sequence of tokens fit the grammar
+    def check_valid(self, grammar):
+        self.reset_buf()
+
+        for x in grammar:
+            self.buf.append(self.get_token())
+            if (self.buf[len(self.buf)-1][1] not in x):      
+                if not self.supress_error: self.throw_error(self.get_token_class(), x)
+                return False
+            else:
+                self.increment_cursor()
+
+        return True
+
+    # TODO: REWRITE TO ONE FUNCTION
+    # handle start of code
     def start_of_code(self):
-        new_node = Node("Start of Code")
-        new_node.parent = self.program_start_node
-        self.program_start_node.lchild = new_node
+        if self.check_valid(G_START_OF_CODE):       return Node(f"Statement: {TOK_START_OF_CODE}", ";", ";")
+        return self.return_error()    
+        
+    # handle end of code
+    def end_of_code(self):
+        if self.check_valid(G_END_OF_CODE):         return Node(f"Statement: {TOK_END_OF_CODE}", ";", ";")
+        return self.return_error()
 
-    # functions that deal with each token
-    # HAI 
-    # | LINE_BREAK
-    def handle_start_of_code(self):
-        self.expectation = [*LINE_BREAK]
+    # handle variable assignment
+    def variable_assignment(self): 
+        if self.check_valid(G_VARIABLE_ASSIGNMENT): return Node("Statement: Variable Assignment", self.buf[0][0], self.buf[2][0])
+        return self.return_error()
+    
+    # handle arithmetic operations; all operations are binary
+    def arithmetic(self): 
+        if self.check_valid(G_ARITHMETIC):          return Node(f"Statement: Arithmetic Operation - {self.buf[0][1]}", self.buf[1][0], self.buf[3][0])
+        return self.return_error()
+        
+    # handle return expression
+    def return_expression(self):
+        if self.check_valid(G_RETURN_EXPRESSION):   return Node(f"Statement: Return Expression", self.buf[1][0], ";")
+        return self.return_error()
 
-    # KTHXBYE
-    # | ;
-    def handle_end_of_code(self):
-        self.expectation = None 
+    # handle function end
+    def function_end(self):
+        self.increment_cursor()
+        return Node("Statement: Function End", ";", ";")
 
-    # TODO: FIX THIS; should be a terminal
-    # LINE BREAK
-    # | LINE_BREAK, COMMENT, COMMENT END                                                                       -> for multi line comments
-    # | STATEMENT, ARITHMETIC_OPERATOR, COMMENT_START, VARIABLE_IDENTIFIER, RETURN_EXPRESSION, FUNCTION_END    -> for functions
-    # | STATEMENT, ARITHMETIC_OPERATOR, COMMENT_START, VARIABLE_IDENTIFIER, FUNCTION_START, END_OF_CODE
-    def handle_line_break(self):
-        if self.MODE_MULTI_LINE_COMMENT:            self.expectation = [*LINE_BREAK, *COMMENT, *COMMENT_END]; return
-        elif self.MODE_FUNCTION:                    self.expectation = [*STATEMENT, *ARITHMETIC_OPERATOR, *COMMENT_START, *VARIABLE_IDENTIFIER, *RETURN_EXPRESSION, *FUNCTION_END]; return
-        else:                                       self.expectation = [*STATEMENT, *ARITHMETIC_OPERATOR, *COMMENT_START, *VARIABLE_IDENTIFIER, *FUNCTION_START, *END_OF_CODE] 
+    # handle new line
+    def new_line(self):
+        self.increment_cursor()
+        return Node(f"Line Break", ";", ";")
 
-        self.reset_modes()
+    # handle variable declaration
+    def variable_declaration(self):
+        # True for grammar with multiple values
+        self.supress_error = True
+
+        # iterate through the grammar list
+        for grammar in G_VARIABLE_DECLARATION:
+            if self.check_valid(grammar):
+                if G_VARIABLE_DECLARATION.index(grammar) == 0:      return Node(f"Statement: {TOK_VARIABLE_DECLARATION}", self.buf[1][0], self.buf[3][0])   # I HAS A <VARIABLE_IDENTIFIER> ITZ <LITERAL> <LINE_BREAK>
+                elif G_VARIABLE_DECLARATION.index(grammar) == 1:    return Node(f"Statement: {TOK_VARIABLE_DECLARATION}", self.buf[1][0], ";")              # I HAS A <VARIABLE_IDENTIFIER> <LINE_BREAK>
+            else:
+                self.cursor = self.cursor - len(self.buf) + 1       # reset cursor         
+                if G_VARIABLE_DECLARATION.index(grammar)+1 == len(G_VARIABLE_DECLARATION): self.supress_error = False   # stop supressing errors if the next grammar is the last in the grammar list
+                continue # continue iteration
+        
+        # return error
+        self.throw_error(self.get_token_class(), G_VARIABLE_DECLARATION)
+        return self.return_error()
+
+    # handle print statement
+    def print_statement(self):
+        print_buf = []
+        self.increment_cursor()
+
+        # keep iterating until error or new line
+        while(True):
+            next_token = self.get_token()
+            self.increment_cursor()
+
+            if next_token[1] == TOK_LINE_BREAK:                             return Node(f"Statement: {TOK_PRINT_STATEMENT}", print_buf, ";")    # end print 
+            elif next_token[1] in [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER]:  print_buf.append(Node("Argument: ", next_token[1], next_token[0]))  # continue print
+            elif next_token[1] == TOK_STRING_DELIMETER:                     continue                                                            # ignore \"
+            else:                                                           break                                                               # error
+                
+        # return error
+        self.throw_error(next_token[1], [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER])
+        return self.return_error()
+
+    # handle comments
+    def comment_start(self):
+        root_class = self.get_token_class()
+        self.increment_cursor()
+
+        # single line 
+        if root_class == TOK_SINGLE_LINE_COMMENT:   
+            while(True):
+                next_token_class = self.get_token_class()
+                self.increment_cursor()
+                if next_token_class == TOK_LINE_BREAK: return Node("Statement: Single Comment", ";", ";")
+        # multi line
+        else:
+            while(True):
+                next_token_class = self.get_token_class()
+                self.increment_cursor()
+                if next_token_class == TOK_MULTI_LINE_COMMENT_END: return Node("Statement: Multi Comment", ";", ";")
+                if self.cursor == self.length: break
+                    
+        # return error
+        self.return_error()
+        self.throw_error(next_token_class, TOK_END_OF_CODE)
+
+    # handle function
+    def function_start(self):
+        function_buf = []
+
+        self.increment_cursor()
+        if self.get_token_class() != TOK_VARIABLE_IDENTIFIER: return self.return_error()
+
+        function_buf.append(Node("Argument:", TOK_VARIABLE_IDENTIFIER, self.get_token()[0]))
+        self.increment_cursor()
+
+        # catch all TOK_YR_KEYWORD TOK_VARIABLE_IDENTIFIER
+        while(True):
+            token_class = self.get_token_class()
+            if token_class != TOK_YR_KEYWORD: break
+            else:
+                self.increment_cursor()
+                token_class = self.get_token_class()
+                if token_class == TOK_VARIABLE_IDENTIFIER:
+                    function_buf.append(Node("Argument:", TOK_VARIABLE_IDENTIFIER, self.get_token()[0]))
+                    self.increment_cursor()
+                else:
+                    self.throw_error(token_class, TOK_VARIABLE_IDENTIFIER)
+                    return self.return_error()
+
+        # catch all statements inside function
+        while(True):
+            token_class = self.get_token_class()
+            if token_class in TOK_BANNED_FUNCTION:      return self.return_error()
+            elif token_class == TOK_END_OF_CODE:        break
+
+            new_node = self.evaluate()
+
+            if new_node.value == "Error":               return self.return_error()
+            elif new_node.value == TOK_FUNCTION_END:    break
             
-    # STATEMENT
-    # | VARIABLE_IDENTIFIER     -> for I HAS A          MODE_I_HAS_A = True
-    # | STRING_DELIMETER        -> for MODE VISIBLE     MODE_VISIBLE = True
-    # | LITERAL
-    def handle_statement(self, token_class):
-        if token_class == "Variable Declaration":   self.expectation = VARIABLE_IDENTIFIER; self.MODE_I_HAS_A = True
-        elif token_class == "Print Statement":      self.expectation = STRING_DELIMETER; self.MODE_VISIBLE = True
-        elif token_class == "Assignment Operator":  self.expectation = LITERAL
+            function_buf.append(new_node)
 
-    # VARIABLE IDENTIFIER
-    # | "Assignment Operator", LINE_BREAK, COMMENT_START    -> for I HAS A
-    # | LITERAL, LINE_BREAK, COMMENT_START                  -> for VISIBLE
-    # | LINE_BREAK, YR_LOOP_KEYWORD                         -> for FUNCTION
-    # | LINE_BREAK, COMMENT_START                           -> for ARITHMETIC, prev2_token = VARIABLE_IDENTIFIER
-    # | AND_OPERATOR                                        -> for ARITHMETIC
-    # | R_KEYWORD                                           -> for prev_token = LINE_BREAK
-    # | "Assignment Operator"
-    def handle_variable_identifier(self):
-        prev_token = self.lexemesList[self.cursor-1][1]
-        prev2_token = self.lexemesList[self.cursor-2][1]
+        return Node(f"Statement: {TOK_FUNCTION_START}", function_buf, ";")
 
-        if self.MODE_I_HAS_A:                       self.expectation = ["Assignment Operator", *LINE_BREAK, *COMMENT_START]
-        elif self.MODE_VISIBLE:                     self.expectation = [*LITERAL, *LINE_BREAK, *COMMENT_START]
-        elif self.MODE_FUNCTION:                    self.expectation = [*LINE_BREAK, *YR_LOOP_KEYWORD]                               
-        elif self.MODE_ARITHMETIC:
-            if prev2_token in VARIABLE_IDENTIFIER:  self.expectation = [*LINE_BREAK, *COMMENT_START]
-            else:                                   self.expectation = AND_OPERATOR
-        elif prev_token in LINE_BREAK:              self.expectation = R_KEYWORD     
-        else:                                       self.expectation = ["Assignment Operator"]
-    
-    # LITERAL
-    # | STRING_DELIMETER
-    # | AND_OPERATOR, LINE_BREAK
-    # | AND_OPERATOR
-    # | LINE_BREAK, COMMENT_START   -> self.MODE_I_HAS_A = False
-    # | STATEMENT
-    def handle_literal(self, token_class):
-        prev_token = self.lexemesList[self.cursor-1][1]
-        if token_class == "String Literal":         self.expectation = STRING_DELIMETER
-        elif self.MODE_ARITHMETIC:
-            if prev_token in AND_OPERATOR:          self.expectation = [*AND_OPERATOR, *LINE_BREAK]
-            elif token_class in LITERAL[:1]:        self.expectation = AND_OPERATOR
-        elif self.MODE_I_HAS_A:                     self.expectation = [*LINE_BREAK, *COMMENT_START]; self.MODE_I_HAS_A = False
-        else:                                       self.expectation = STATEMENT 
+    # match token/series of tokens 
+    def evaluate(self):
+        token_class = self.get_token_class()
 
-    # STRING DELIMETER
-    # | VARIABLE_IDENTIFIER, LINE_BREAK, COMMENT_START -> for String Literal, in mode VISIBLE
-    # | STATEMENT
-    # | LITERAL
-    def handle_string_delimeter(self):
-        if self.lexemesList[self.cursor-1][1] == "String Literal":
-            if self.MODE_VISIBLE:                   self.expectation = [*VARIABLE_IDENTIFIER, *LINE_BREAK, *COMMENT_START]
-            else:                                   self.expectation = STATEMENT
-        else:                                       self.expectation = LITERAL
+        # decide
+        if token_class == TOK_START_OF_CODE and self.cursor == 0:                                       return self.start_of_code()
+        elif token_class == TOK_END_OF_CODE and self.cursor == self.length - 1:                         return self.end_of_code()
+        elif token_class == TOK_VARIABLE_DECLARATION:                                                   return self.variable_declaration()
+        elif token_class == TOK_PRINT_STATEMENT:                                                        return self.print_statement()
+        elif token_class == TOK_RETURN_EXPRESSION:                                                      return self.return_expression()
+        elif token_class == TOK_FUNCTION_START:                                                         return self.function_start()
+        elif token_class == TOK_FUNCTION_END:                                                           return self.function_end()
+        elif token_class in TOK_ARITHMETIC:                                                             return self.arithmetic()
+        elif token_class in TOK_COMMENT_START:                                                          return self.comment_start()
+        elif [token_class, self.get_next_token_class()] == [TOK_VARIABLE_IDENTIFIER, TOK_R_KEYWORD]:    return self.variable_assignment()
+        elif token_class in TOK_LINE_ENDING:                                                            return self.new_line()
+        else:                                                                                           self.error = True; return Node("Error", "Unknown Token", token_class)
 
-    # ARITHMETIC OPERATOR -> MODE_ARITHMETIC = True
-    # | VARIABLE_IDENTIFIER, ARITHMETIC_OPERATOR, LITERAL[:1], AND_OPERATOR
-    def handle_arithmetic_operator(self):
-        self.MODE_ARITHMETIC = True
-        self.expectation = [*VARIABLE_IDENTIFIER, *ARITHMETIC_OPERATOR, *LITERAL[:1], *AND_OPERATOR]
-
-    # AND OPERATOR
-    # | VARIABLE_IDENTIFER, LITERAL[:1]
-    def handle_and_operator(self):
-        self.expectation = [*VARIABLE_IDENTIFIER, *LITERAL[:1]]
-
-    # COMMENT START
-    # | LINE_BREAK, COMMENT                 -> for Single Line Comment; MODE_SINGLE_LINE_COMMENT = True
-    # | LINE_BREAK, COMMENT, COMMENT_END    -> for Multi Line Comment; MODE_MULTI_LINE_COMMENT = True
-    def handle_comment_start(self, token_class):
-        if token_class == "Single Line Comment":    self.expectation = [*LINE_BREAK, *COMMENT]; self.MODE_SINGLE_LINE_COMMENT = True
-        else:                                       self.expectation = [*LINE_BREAK, *COMMENT, *COMMENT_END]; self.MODE_MULTI_LINE_COMMENT = True
-
-    # COMMENT END
-    # | LINE_BREAK
-    def handle_comment_end(self):
-        self.expectation = LINE_BREAK
-
-    # R KEYWORD -> MODE_I_HAS_A = True
-    # | LITERAL
-    def handle_r_keyword(self):
-        self.MODE_I_HAS_A = True
-        self.expectation = LITERAL
-
-    # FUNCTION START -> MODE_FUNCTION
-    # | VARIABLE_IDENTIFIER
-    def handle_function_start(self):
-        self.MODE_FUNCTION = True
-        self.expectation = VARIABLE_IDENTIFIER
-
-    # YR LOOP KEYWORD
-    # | VARIABLE_IDENTIFIER 
-    def handle_yr_loop_keyword(self):
-        self.expectation = VARIABLE_IDENTIFIER
-
-    # RETURN EXPRESSION
-    # | EXPRESSION, LITERAL, ARITHMETIC_OPERATOR
-    def handle_return_expression(self):
-        self.expectation = [*EXPRESSION, *LITERAL, *ARITHMETIC_OPERATOR]
-
-    # FUNCTION END -> MODE_FUNCTION = False
-    # | LINE_BREAK, COMMENT_START
-    def handle_function_end(self):
-        self.MODE_FUNCTION = False
-        self.expectation = [*LINE_BREAK, *COMMENT_START]
-
-    def evaluate(self, token_class):
-        # return flag used for error checking
-        success = True
-        
-        if self.MODE_SINGLE_LINE_COMMENT and token_class in LINE_BREAK: self.MODE_SINGLE_LINE_COMMENT = False   # if a single line comment has been detected PRIOR, disable self.MODE_SINGLE_LINE_COMMENT if a new line is detected 
-        elif self.MODE_MULTI_LINE_COMMENT and token_class in COMMENT_END: self.MODE_MULTI_LINE_COMMENT = False  # if a multi line comment has been detected PRIOR, disable self.MODE_SINGLE_LINE_COMMENT if TLDR has been detected
-
-        # print error message if the current token is not in the expected list
-        if token_class not in self.expectation or (token_class in RETURN_EXPRESSION and not self.MODE_FUNCTION):
-            print(f"\n[!] ERROR: Unknown token of type <{token_class}> detected, expected <" + ', '.join(str(x).replace("\n", "\+n") for x in self.expectation) + ">")
-            return False
-
-        # Modify self.expectation depending on what the token is
-        if token_class in PROGRAM:                  self.handle_start_of_code()
-        elif token_class in END_OF_CODE:            self.handle_end_of_code()
-        elif token_class in LINE_BREAK:             self.handle_line_break()
-        elif token_class in STATEMENT:              self.handle_statement(token_class)
-        elif token_class in VARIABLE_IDENTIFIER:    self.handle_variable_identifier()
-        elif token_class in LITERAL:                self.handle_literal(token_class)
-        elif token_class in STRING_DELIMETER:       self.handle_string_delimeter()
-        elif token_class in ARITHMETIC_OPERATOR:    self.handle_arithmetic_operator()
-        elif token_class in AND_OPERATOR:           self.handle_and_operator()
-        elif token_class in COMMENT_START:          self.handle_comment_start(token_class)
-        elif token_class in COMMENT_END:            self.handle_comment_end()
-        elif token_class in R_KEYWORD:              self.handle_r_keyword()
-        elif token_class in FUNCTION_START:         self.handle_function_start()
-        elif token_class in YR_LOOP_KEYWORD:        self.handle_yr_loop_keyword()
-        elif token_class in RETURN_EXPRESSION:      self.handle_return_expression()
-        elif token_class in FUNCTION_END:           self.handle_function_end()
-
-        # TODO:
-        # [ ] unary opeartors
-        # [ ] check if operator is binary or has infinite arity
-        #   - check arithmetic operators
-        # [ ] booleans:
-        #   unary:      NOT <x>
-        #   binary:     BOTH OF <x> [AN] <y>
-        #               EITHER OF <x> [AN] <y>
-        #               WON OF <x> [AN] <y>
-        #   infinite:   ALL OF <x> [AN] <y> ... MKAY
-        #               ANY OF <x> [AN] <y> ... MKAY
-        # [ ] comparison:
-        #   binary:     BOTH SAEM <x> [AN] <y>
-        #               DIFFRINT <x> [AN] <y>
-        #   special:    <expression>, DIFFRINT IT AN SMALLR OF IT AN <y>
-        # [ ] casting:
-        #   MAEK <expression> [A] <type>
-        #   <variable> IS NOW A <type>
-        #   <variable> R MAEK <variable> [A] <type>
-        # [ ] IO:
-        #   VISIBLE: recognize "!" character
-        #   GIMMEH: implement
-        #       GIMMEH <variable>
-        # [ ] IT variable:
-        #   expressions unassigned will be put in a variable called "IT"
-        #   gets overwritten for each expresion that was not assigned to a variable
-        # [ ] Assigment statements:
-        #   double check implementation, should be of the form: <variable> <assignment operator> <expression>
-        # [ ] FLOW CONTROL:
-        #   if-then:
-        #       <expression>
-        #       O RLY?
-        #       YA RLY
-        #           <code block>
-        #       NO WAI
-        #           <code block>
-        #       OIC
-        #   case:
-        #   loops:
-
-        # TODO: VERY IMPORTANT
-        # - turn production into parse tree format
-        # - turn line breaks into terminals for each node
-        # - define format for each node
-
-        return success
-    
-    def traverse_nodes(self):
-        Node.print_node(self.program_start_node)
-
-    def traverse_tokens(self):
-        # reset cursor
+    # solve each tokenn
+    def solve(self):
         self.cursor = 0
-        
+
         # keep iterating until end of lexeme list
         while(self.cursor != self.length):
-            # get the token
-            current_token = self.lexemesList[self.cursor]
-             
-            # stop the loop if an error has been encounted, can be changed to find all errors
-            if not self.evaluate(current_token[1]): break
+            Node.print_info(self.evaluate())
+            if self.error: break        
 
-            # print recognized tokens that are not linebreaks or comments
-            # TODO: delete the print lines below if output is not needed
-            if (current_token[1] == "Start of Code" or (self.cursor > 1 and self.lexemesList[self.cursor-1][1] == "Line Break")):
-                if current_token[1] == "Comment": 
-                    self.increment_line_count()
-                else:
-                    print(f"\nLine #{self.line_count}".ljust(15) + f"[!] {current_token[1]}".ljust(30), "->", current_token[0].replace("\n", r"\n"))
-                    self.increment_line_count()
-            elif not (current_token[1] == "Line Break" or current_token[1] == "Comment"):
-                print("".ljust(14) + f"[!] {current_token[1]}".ljust(30), "->", current_token[0].replace("\n", r"\n"))
-
-            # go to next token
-            self.increment_cursor()
-
-    def print_tokens(self):
-        self.cursor = 0
-        while(self.cursor != self.length):
-            print(self.lexemesList[self.cursor][0].replace("\n", "\+n"), self.lexemesList[self.cursor][1])
-            self.increment_cursor()
-        print()
+    # execute solve
+    def traverse_tokens(self): self.solve()
                      
 def main():
     parser_obj = Parser(test_case)
+    # for i in parser_obj.lexemesList:
+    #     if i[1] == "Line Break": print(i)
+    #     else: print(i, end="")
+    # print()
     parser_obj.traverse_tokens()
+    print()
+    # parser_obj.traverse_nodes(parser_obj.program_node)
 
 if __name__ == "__main__":
     main()
