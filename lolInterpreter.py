@@ -70,7 +70,7 @@ def is_int_convertible(number):
 
 # Function that converts a given stringed number to its raw numerical value
 def get_stringed_number_value(number):
-    return float(number) if is_float_convertible(number) else int(number) if is_int_convertible(number) else "<uninitialized>"            
+    return int(number) if is_int_convertible(number) else float(number) if is_float_convertible(number) else "<uninitialized>" 
 
 # Function that executes syntax analysis
 def syntaxAnalysis(lexemesList):
@@ -112,8 +112,6 @@ def syntaxAnalysis(lexemesList):
             # variable initialization starts here
             if initializing:    
 
-                print(f"'{i[0]}'  nl: {current_new_line};  ref: {existingLexemesDict_newline_reference[count]}")
-
                 # check for variable name after I HAS A
                 if i[0] == "I HAS A":
                     current_new_line += 1
@@ -150,6 +148,7 @@ def syntaxAnalysis(lexemesList):
 
         # checks for a variable name after I HAS A, this is illegal now!
         if i[0] == "I HAS A":
+            print("==============================OAIDFJOASJDASIJASDOIJD======================")
             syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count+1]}]: Cannot instantiate variable outside of declarations clause.\n")
             
         
@@ -183,78 +182,120 @@ def symbolTableAnalyzer(lexemesList):
 
     # ================= This is to be done for next milestone ================
 
-    # # variables
-    # lexeme_skip_counter = 0
-    # current_lexeme_index = -1
+    # variables
+    lexeme_skip_counter = 0
+    current_lexeme_index = -1
 
 
-    # # do for every lexeme
-    # for each_item in lexemesList:
-    #     # update iterating variable
-    #     current_lexeme_index += 1
+    # do for every lexeme
+    for each_item in lexemesList:
 
-    #     # this is the identifier 
-    #     identifier = each_item[0]
+        # update iterating variable
+        current_lexeme_index += 1
 
-    #     # skip until lexeme skip counter is not 0
-    #     if lexeme_skip_counter != 0:
-    #         print(f"Skipping '{identifier}'")
-    #         lexeme_skip_counter -= 1
-    #         continue
+        # this is the identifier 
+        identifier = each_item[0]
 
-    #     # just print out cuz why not
-    #     print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
+        # skip until lexeme skip counter is not 0
+        if lexeme_skip_counter != 0:
+            print(f"Skipping '{identifier}'")
+            lexeme_skip_counter -= 1
+            continue
+
+        # just print out cuz why not
+        print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
     
-    #     # skip HAI and BYE
-    #     if identifier in ["HAI", "KTHXBYE"]: continue
+        # skip HAI and BYE
+        if identifier in ["HAI", "KTHXBYE"]: continue
 
-    #     # CASE OF: variable equalization
-    #     if identifier == "I HAS A":
+        # CASE OF: variable equalization
+        if identifier == "I HAS A":
             
-    #         # if failed, listIndexError means syntactical error
-    #         try:
+            # if failed, listIndexError means syntactical error
+            try:
 
-    #             # variable name is next item, also its value is current index + 3
-    #             ret_list.append([lexemesList[current_lexeme_index+1][0], f"{get_stringed_number_value(lexemesList[current_lexeme_index+3][0])}"])
+                # check if not yet duplicate
+                is_duplicate = False
+                for item in ret_list:
 
-    #             # should skip 3 more items after this iteration
-    #             lexeme_skip_counter = 3
-
-    #         # if failed, listIndexError means syntactical error
-    #         except IndexError:
-    #             print("Syntactical error was found.")
-
-
-    #     # CASE OF: arithmetic operations
-    #     if identifier in la.arithmetic_operations:
-
-    #         # variables here
-    #         first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
-    #         second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
+                    # add item only if not duplicate
+                    if item[0] == lexemesList[current_lexeme_index+1][0]:
+                        is_duplicate = True
+                        break
                 
-    #         # label to put in table
-    #         arithmetic_label = f"{lexemesList[current_lexeme_index][0]} "
-    #         arithmetic_label += f"{lexemesList[current_lexeme_index+1][0]} "
-    #         arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
-    #         arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
+                # variable name is next item, also its value is current index + 3
+                if not is_duplicate:
 
-    #         match identifier:
-    #             case "SUM OF":          # addition
-    #                 ret_list.append([arithmetic_label, f"{first_number+second_number}"])
-    #             case "MOD OF":          # modulo
-    #                 ret_list.append([arithmetic_label, f"{first_number%second_number}"])
-    #             case "QUOSHUNT OF":     # division
-    #                 ret_list.append([arithmetic_label, f"{first_number/second_number}"])
-    #             case "SMALLR OF":       # minimum
-    #                 ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
-    #             case "BIGGR OF":        # maximum
-    #                 ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
-    #             case "DIFF OF":
-    #                 ret_list.append([arithmetic_label, f"{first_number-second_number}"])
-    #             case "PRODUKT OF":
-    #                 ret_list.append([arithmetic_label, f"{first_number*second_number}"])
-    #             case _:
-    #                 pass            
+                    # add properly if string
+                    if lexemesList[current_lexeme_index+4][1] == "String Literal":
+                        ret_list.append([lexemesList[current_lexeme_index+1][0], f"{lexemesList[current_lexeme_index+3][0]}{lexemesList[current_lexeme_index+4][0]}{lexemesList[current_lexeme_index+5][0]}"])
+
+                    # add properly if number or uninitialized
+                    else:
+                        ret_list.append([lexemesList[current_lexeme_index+1][0], f"{get_stringed_number_value(lexemesList[current_lexeme_index+3][0])}"])
+
+                # should skip 3 more items after this iteration
+                lexeme_skip_counter = 3
+
+            # if failed, listIndexError means syntactical error
+            except IndexError:
+                print("Syntactical error was found.")
+
+        # CASE OF: R
+        if identifier == "R":
+            print("==================================================")
+            value = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
+            
+            # find the value and update value
+            index = -1
+            for each_item in ret_list:
+                index += 1
+                if each_item[0] == lexemesList[current_lexeme_index-1][0]:
+
+                    # update if string
+                    if lexemesList[current_lexeme_index+2][1] == "String Literal":
+                        each_item[1] = f"{lexemesList[current_lexeme_index+1][0]}{lexemesList[current_lexeme_index+2][0]}{lexemesList[current_lexeme_index+3][0]}"
+                    
+                    # update if number or float
+                    else:
+                        # update if found
+                        print(f"Currently on {lexemesList[current_lexeme_index-1]}")
+                        each_item[1] = lexemesList[current_lexeme_index+1][0]
+                    # print(f"value: {value}")
+                    # print(f"also: {lexemesList[current_lexeme_index+1][1]}")
+                    # lexemesList[current_lexeme_index+1][1] = f"{get_stringed_number_value(lexemesList[current_lexeme_index+1][1]) + value}"
+                    # print(f"OK and got this: {lexemesList[current_lexeme_index+1][1]}")
+
+        # CASE OF: arithmetic operations
+        if identifier in la.arithmetic_operations:
+
+            # variables here
+            first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
+            second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
+                
+            # label to put in table
+            arithmetic_label = f"{lexemesList[current_lexeme_index][0]} "
+            arithmetic_label += f"{lexemesList[current_lexeme_index+1][0]} "
+            arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
+            arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
+
+            match identifier:
+                case "SUM OF":          # addition
+                    ret_list.append([arithmetic_label, f"{first_number+second_number}"])
+                case "MOD OF":          # modulo
+                    ret_list.append([arithmetic_label, f"{first_number%second_number}"])
+                case "QUOSHUNT OF":     # division
+                    ret_list.append([arithmetic_label, f"{first_number/second_number}"])
+                case "SMALLR OF":       # minimum
+                    ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
+                case "BIGGR OF":        # maximum
+                    ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
+                case "DIFF OF":
+                    ret_list.append([arithmetic_label, f"{first_number-second_number}"])
+                case "PRODUKT OF":
+                    ret_list.append([arithmetic_label, f"{first_number*second_number}"])
+                case _:
+                    pass            
 
     # print(f"\nResults: {ret_list}")
     return ret_list
