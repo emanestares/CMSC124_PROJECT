@@ -64,11 +64,19 @@ def is_float_convertible(number):
 def is_int_convertible(number):
         try:
             int(number)
+            for each_character in f"{number}":
+                if each_character == ".":
+                    return False
+            print("True")
             return True
         except ValueError:
             
             try:
                 int(number[1:-1])
+                for each_character in f"{number}":
+                    if each_character == ".":
+                        return False
+                print("True")
                 return True
             except ValueError:                
                 return False
@@ -250,11 +258,98 @@ def get_datatype(value):
         return TYPE_STRINGED_NUMBER
     
 ###### implementation for IS NOW A ######
-def is_now_a(variable_name, value, type):
-  if type == TYPE_INTEGER:
-    return int(value)
-  else:
-    return float(value)
+def is_now_a(variable, target_type):
+
+    # get the value
+    variable_value = get_variable_value(variable)
+    print(f"\nvariable_value:\t{variable_value}.")
+
+    # this is the current datatype of the variable
+    current_type = get_datatype(variable_value)
+
+    # print notifications for now
+    print(f"current_type:\t{current_type}")
+    print(f"target_type:\t{target_type}\n")
+
+    # in case the same, just end the function
+    if current_type == target_type: return
+
+    # in case the current type is an integer (NUMBR)
+    if current_type == TYPE_INTEGER:
+
+        # return appropriately according to documentation
+        if target_type == TYPE_FLOAT:   
+            set_variable_value(variable, float(variable_value))
+            return
+        if target_type == TYPE_STRINGED_NUMBER:  
+            set_variable_value(variable, f"\"{int(variable_value)}\"")
+            return
+        
+    # in case the current type is a float (NUMBAR)
+    elif current_type == TYPE_FLOAT:
+
+        # return appropriately according to documentation
+        if target_type == TYPE_INTEGER: 
+            set_variable_value(variable, int(get_numerical_value_from_string(variable_value)))
+            return
+        if target_type == TYPE_STRINGED_NUMBER:   
+            set_variable_value(variable, f"\"{'{:.2f}'.format(get_numerical_value_from_string(variable_value))}\"")
+            return
+
+    # in case the current type is a stringed number (YARN)
+    elif current_type == TYPE_STRINGED_NUMBER:
+
+        # return appropriately according to documentation
+        if target_type == TYPE_INTEGER:  
+            set_variable_value(variable, int(get_numerical_value_from_string(variable_value[1:-1])))
+            return
+        if target_type == TYPE_FLOAT:  
+            set_variable_value(variable, round(get_numerical_value_from_string(variable_value[1:-1]), 2))
+            return
+
+    # in case the value is unitialized
+    elif current_type == TYPE_UNINITIALIZED:
+
+        # return appropriately according to documentation
+        if target_type == TYPE_BOOL:     
+            set_variable_value(variable, "WIN" if (get_variable_value(variable) != ERROR) else "FAIL")
+            return
+        print("ERROR: Uninitialized can only casted to a TROOF!")
+        return       
+
+
+    # in case the current value is boolean (TROOF)
+    elif current_type == TYPE_BOOL:
+
+        # return appropriately according to documentation
+        if (variable_value == "WIN"):
+            if target_type == TYPE_INTEGER:      
+                set_variable_value(variable, int(1))
+                return 
+            if target_type == TYPE_FLOAT:        
+                set_variable_value(variable, round(float(1), 1))
+                return 
+        else: 
+            set_variable_value(variable, 0)
+            return 
+
+
+    # if came up to this point, check if
+    # in case the target value is boolean (TROOF)
+    if target_type == TYPE_BOOL:
+
+        # return appropriately according to documentation
+        if (variable_value == "" or variable_value == 0): 
+            set_variable_value(variable, "FAIL")
+            return 
+        set_variable_value(variable, "WIN")            
+        return 
+    
+    # if up to here, an uknown error!
+    print("-------------------- UNKNOWN ERROR --------------------")
+    return
+
+
 
 ###### implementation for MAEK ######
 def maek(variable, target_type):
@@ -541,6 +636,16 @@ def symbolTableAnalyzer(lexemesList):
                 
                 # if (result != ERROR):
                 print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} {lexemesList[current_lexeme_index+2][0]}: {result}")
+
+
+        #  ============= CASE OF: IS NOW A ============= 
+        if identifier == "IS NOW A":
+
+            # is_now_a takes in variable name and target datatype
+            result = is_now_a(lexemesList[current_lexeme_index-1][0], lexemesList[current_lexeme_index+1][0])
+            lexeme_skip_counter = 1
+            print(f"IS_NOW_A successfully implemented.")
+            
 
 
     return variables_list
