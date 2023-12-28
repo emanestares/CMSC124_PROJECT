@@ -69,8 +69,8 @@ def is_int_convertible(number):
             return False
 
 # Function that converts a given stringed number to its raw numerical value
-def get_stringed_number_value(number):
-    return int(number) if is_int_convertible(number) else float(number) if is_float_convertible(number) else "<uninitialized>" 
+def get_numerical_value_from_string(number):
+    return int(number) if is_int_convertible(number) else round(float(number), 2) if is_float_convertible(number) else "<uninitialized>" 
 
 # Function that executes syntax analysis
 def syntaxAnalysis(lexemesList):
@@ -194,39 +194,136 @@ def syntaxAnalysis(lexemesList):
 
 # [ ] casting:
 
+# global variable: list of global variables
+variables_list = [["Identifier", "Value"]]
+
+# helper function that returns the value of a specific variable
+def get_variable_value(variable):
+    global variables_list
+    for value_pair in variables_list:
+        if (value_pair[0] == variable):
+            return value_pair[1]
+    return ERROR
+
+# helper function that sets the value of a specific variable
+def set_variable_value(variable, value):
+    global variables_list
+    for value_pair in variables_list:
+        if (value_pair[0] == variable):
+            value_pair[1] = value
+            return value_pair[1]
+    return ERROR
+
+# helper function that sets the value of a specific variable
+def make_variable_value(variable, value):
+    global variables_list
+    for value_pair in variables_list:
+        if (value_pair[0] == variable):
+            return ERROR
+    variables_list.append([f"{variable}", value])
+    return value
+
 ###### global variables for casting ######
-TYPE_INTEGER = "NUMBAR"
-TYPE_FLOAT = "YARN"
+TYPE_INTEGER = "NUMBR"
+TYPE_FLOAT = "NUMBAR"
+TYPE_UNINITIALIZED = "NOOB"
+TYPE_BOOL = "TROOF"
+TYPE_STRINGED_NUMBER = "YARN"
+ERROR = "error"
 
-
-#   MAEK <expression> [A] <type>
-###### implementation for MAEK ######
-TYPE_INTEGER = "NUMBAR"
-TYPE_FLOAT = "YARN"
-def maek(value, type):
-  if type == TYPE_INTEGER:
-    return int(value)
-  else:
-    return float(value)
-
-# helper function that changes the value of a given variable
-
-
-#   <variable> IS NOW A <type>  
+# function that determines the datatype of a variable
+def get_datatype(value):
+    if (is_float_convertible(value)):
+        return TYPE_FLOAT
+    elif (is_int_convertible(value)):
+        return TYPE_INTEGER
+    elif (get_numerical_value_from_string(value) == "<uninitialized>"):
+        return TYPE_UNINITIALIZED
+    elif (value in ["WIN", "FAIL"]):
+        return TYPE_BOOL
+    else:
+        return TYPE_STRINGED_NUMBER
+    
 ###### implementation for IS NOW A ######
-def IS_NOW_A(variable_name, value, type):
+def is_now_a(variable_name, value, type):
   if type == TYPE_INTEGER:
     return int(value)
   else:
     return float(value)
 
+###### implementation for MAEK ######
+def maek(variable, value, target_type):
+
+    # this is the current datatype of the variable
+    current_type = get_datatype(value)
+
+
+
+    # in case the current type is an integer (NUMBR)
+    if current_type == TYPE_INTEGER:
+
+        # return appropriately according to documentation
+        if target_type == TYPE_FLOAT:   return float(value)
+        if target_type == TYPE_STRINGED_NUMBER:  return f"{value}"
+
+
+    # in case the current type is a float (NUMBAR)
+    elif current_type == TYPE_FLOAT:
+
+        # return appropriately according to documentation
+        if target_type == TYPE_INTEGER: return int(value)
+        if target_type == TYPE_STRINGED_NUMBER:  return f"{round(float(value), 2)}"
+    
+
+
+    # in case the current type is a stringed number (YARN)
+    elif current_type == TYPE_STRINGED_NUMBER:
+
+        # return appropriately according to documentation
+        if target_type == TYPE_INTEGER: 
+            return get_numerical_value_from_string(value)
+
+
+
+    # in case the value is unitialized
+    elif current_type == TYPE_UNINITIALIZED:
+
+        # return appropriately according to documentation
+        if target_type == TYPE_BOOL:    return "WIN" if (get_variable_value(variable) != ERROR) else "FAIL"
+        return ERROR        
+
+
+    # in case the current value is boolean (TROOF)
+    elif current_type == TYPE_BOOL:
+
+        # return appropriately according to documentation
+        if (value == "WIN"):
+            if target_type == TYPE_INTEGER:     return int(1)
+            if target_type == TYPE_FLOAT:       return round(float(1), 1)
+        else:
+            return 0
+        return ERROR        
+
+
+    # if came up to this point, check if
+    # in case the target value is boolean (TROOF)
+    if target_type == TYPE_BOOL:
+
+        # return appropriately according to documentation
+        if (value == "" or value == 0):
+            return "FAIL"
+        return "WIN"
+    
+    # if up to here, an uknown error!
+    print("-------------------- UNKNOWN ERROR --------------------")
+    return ERROR
 
 # function that performs a given arithmetic operation properly and its stringed numbers
 def perform_arithmetic_operation(operation, value_1, value_2):
 
     # variables here
-    first_number = get_stringed_number_value(value_1)
-    second_number = get_stringed_number_value(value_2)
+    first_number = get_numerical_value_from_string(value_1)
+    second_number = get_numerical_value_from_string(value_2)
         
     # switch statement
     match operation:
@@ -270,8 +367,8 @@ def symbolTableAnalyzer(lexemesList):
     '''Function that executes syntax analysis given the list of lexemes.
     This function returns a list of identifiers and their values.'''
 
-    # return value
-    ret_list = [["Identifier", "Value"]]
+    # reset variables list
+    variables_list = [["Identifier", "Value"]]
 
     # variables
     lexeme_skip_counter = 0
@@ -310,7 +407,7 @@ def symbolTableAnalyzer(lexemesList):
 
                 # check if not yet duplicate
                 is_duplicate = False
-                for item in ret_list:
+                for item in variables_list:
 
                     # add item only if not duplicate
                     if item[0] == lexemesList[current_lexeme_index+1][0]:
@@ -322,11 +419,11 @@ def symbolTableAnalyzer(lexemesList):
 
                     # add properly if string
                     if lexemesList[current_lexeme_index+4][1] == "String Literal":
-                        ret_list.append([lexemesList[current_lexeme_index+1][0], f"{lexemesList[current_lexeme_index+3][0]}{lexemesList[current_lexeme_index+4][0]}{lexemesList[current_lexeme_index+5][0]}"])
+                        variables_list.append([lexemesList[current_lexeme_index+1][0], f"{lexemesList[current_lexeme_index+3][0]}{lexemesList[current_lexeme_index+4][0]}{lexemesList[current_lexeme_index+5][0]}"])
 
                     # add properly if number or uninitialized
                     else:
-                        ret_list.append([lexemesList[current_lexeme_index+1][0], f"{get_stringed_number_value(lexemesList[current_lexeme_index+3][0])}"])
+                        variables_list.append([lexemesList[current_lexeme_index+1][0], f"{get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}"])
 
                 # should skip 3 more items after this iteration
                 lexeme_skip_counter = 3
@@ -338,11 +435,11 @@ def symbolTableAnalyzer(lexemesList):
         # CASE OF: R
         if identifier == "R":
             print("==================================================")
-            value = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
+            value = get_numerical_value_from_string(lexemesList[current_lexeme_index+1][0])
             
             # find the value and update value
             index = -1
-            for each_item in ret_list:
+            for each_item in variables_list:
                 index += 1
                 if each_item[0] == lexemesList[current_lexeme_index-1][0]:
 
@@ -404,7 +501,7 @@ def symbolTableAnalyzer(lexemesList):
             # if not previously arithmetic, check other cases
 
 
-    return ret_list
+    return variables_list
 
 
 
