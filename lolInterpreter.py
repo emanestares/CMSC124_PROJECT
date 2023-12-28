@@ -173,6 +173,99 @@ def syntaxAnalysis(lexemesList):
     for each_error in syntax_error_list:
         displayOnTerminal(each_error)
 
+# TODO: recognize commas
+
+# TODO:
+# [ ] unary opeartors
+# [ ] check if operator is binary or has infinite arity
+#   - check arithmetic operators
+# [ ] booleans:
+#   unary:      NOT <x>
+#   binary:     BOTH OF <x> [AN] <y>
+#               EITHER OF <x> [AN] <y>
+#               WON OF <x> [AN] <y>
+#   infinite:   ALL OF <x> [AN] <y> ... MKAY
+#               ANY OF <x> [AN] <y> ... MKAY
+# [ ] comparison:
+#   binary:     BOTH SAEM <x> [AN] <y>
+#               DIFFRINT <x> [AN] <y>
+#   special:    <expression>, DIFFRINT IT AN SMALLR OF IT AN <y>
+
+
+# [ ] casting:
+
+###### global variables for casting ######
+TYPE_INTEGER = "NUMBAR"
+TYPE_FLOAT = "YARN"
+
+
+#   MAEK <expression> [A] <type>
+###### implementation for MAEK ######
+TYPE_INTEGER = "NUMBAR"
+TYPE_FLOAT = "YARN"
+def maek(value, type):
+  if type == TYPE_INTEGER:
+    return int(value)
+  else:
+    return float(value)
+
+# helper function that changes the value of a given variable
+
+
+#   <variable> IS NOW A <type>  
+###### implementation for IS NOW A ######
+def IS_NOW_A(variable_name, value, type):
+  if type == TYPE_INTEGER:
+    return int(value)
+  else:
+    return float(value)
+
+
+# function that performs a given arithmetic operation properly and its stringed numbers
+def perform_arithmetic_operation(operation, value_1, value_2):
+
+    # variables here
+    first_number = get_stringed_number_value(value_1)
+    second_number = get_stringed_number_value(value_2)
+        
+    # switch statement
+    match operation:
+
+        # addition
+        case "SUM OF":          
+            return first_number + second_number
+        
+        # modulo
+        case "MOD OF":
+            return first_number%second_number
+        
+        # division
+        case "QUOSHUNT OF":
+            return first_number/second_number
+        
+        # minimum
+        case "SMALLR OF":
+            return first_number if first_number<=second_number else second_number
+        
+        
+        # maximum
+        case "BIGGR OF":        
+            return first_number if first_number>=second_number else second_number
+        
+        # difference
+        case "DIFF OF":
+            return first_number-second_number
+        
+        
+        # multiplication
+        case "PRODUKT OF":
+            return first_number*second_number
+        
+        # default
+        case _:
+            pass      
+
+
 def symbolTableAnalyzer(lexemesList):
     '''Function that executes syntax analysis given the list of lexemes.
     This function returns a list of identifiers and their values.'''
@@ -180,12 +273,13 @@ def symbolTableAnalyzer(lexemesList):
     # return value
     ret_list = [["Identifier", "Value"]]
 
-    # ================= This is to be done for next milestone ================
-
     # variables
     lexeme_skip_counter = 0
     current_lexeme_index = -1
-
+    arithmetic_operations = []
+    arithmetic_operations_counter = []
+    arithmetic_values_container = []
+    was_arithmetic = False
 
     # do for every lexeme
     for each_item in lexemesList:
@@ -266,36 +360,77 @@ def symbolTableAnalyzer(lexemesList):
                     # lexemesList[current_lexeme_index+1][1] = f"{get_stringed_number_value(lexemesList[current_lexeme_index+1][1]) + value}"
                     # print(f"OK and got this: {lexemesList[current_lexeme_index+1][1]}")
 
+
+
+
         # CASE OF: arithmetic operations
         if identifier in la.arithmetic_operations:
 
-            # variables here
-            first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
-            second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
-                
-            # label to put in table
-            arithmetic_label = f"{lexemesList[current_lexeme_index][0]} "
-            arithmetic_label += f"{lexemesList[current_lexeme_index+1][0]} "
-            arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
-            arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
+            # add to arithmetic operations
+            arithmetic_operations.append(identifier)
+            arithmetic_operations_counter.append(identifier)
 
-            match identifier:
-                case "SUM OF":          # addition
-                    ret_list.append([arithmetic_label, f"{first_number+second_number}"])
-                case "MOD OF":          # modulo
-                    ret_list.append([arithmetic_label, f"{first_number%second_number}"])
-                case "QUOSHUNT OF":     # division
-                    ret_list.append([arithmetic_label, f"{first_number/second_number}"])
-                case "SMALLR OF":       # minimum
-                    ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
-                case "BIGGR OF":        # maximum
-                    ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
-                case "DIFF OF":
-                    ret_list.append([arithmetic_label, f"{first_number-second_number}"])
-                case "PRODUKT OF":
-                    ret_list.append([arithmetic_label, f"{first_number*second_number}"])
-                case _:
-                    pass            
+            # make the switch true
+            was_arithmetic = True
+
+            # do not append anything yet. Check if there are others pa
+
+            # # variables here
+            # first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
+            # second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
+                
+            # # label to put in table
+            # arithmetic_label = f"{lexemesList[current_lexeme_index][0]} "
+            # arithmetic_label += f"{lexemesList[current_lexeme_index+1][0]} "
+            # arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
+            # arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
+
+            # match identifier:
+            #     case "SUM OF":          # addition
+            #         ret_list.append([arithmetic_label, f"{first_number+second_number}"])
+            #     case "MOD OF":          # modulo
+            #         ret_list.append([arithmetic_label, f"{first_number%second_number}"])
+            #     case "QUOSHUNT OF":     # division
+            #         ret_list.append([arithmetic_label, f"{first_number/second_number}"])
+            #     case "SMALLR OF":       # minimum
+            #         ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
+            #     case "BIGGR OF":        # maximum
+            #         ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
+            #     case "DIFF OF":
+            #         ret_list.append([arithmetic_label, f"{first_number-second_number}"])
+            #     case "PRODUKT OF":
+            #         ret_list.append([arithmetic_label, f"{first_number*second_number}"])
+            #     case _:
+            #         pass            
+
+        # if term is hindi na arithmetic
+        else:
+
+            # check if it was previously arithmetic
+            if (was_arithmetic):
+
+                # access na yung ibang values
+                arithmetic_values_container.append(identifier)
+                i=2
+                for item in reversed(arithmetic_operations): 
+                    arithmetic_values_container.append(lexemesList[current_lexeme_index+i][0])
+                    i = i+2
+
+                # compute the value
+                for each_operation in reversed(arithmetic_operations): 
+                    value_1 = arithmetic_values_container.pop(0)
+                    print(f"Value_1: {value_1}")
+                    value_2 = arithmetic_values_container.pop(0)
+                    print(f"Value_2: {value_2}")
+                    arithmetic_values_container.insert(0, perform_arithmetic_operation(each_operation, value_1, value_2))
+                print(f"Got value: {arithmetic_values_container[0]}")
+
+                # skip the number of times according sa i
+                lexeme_skip_counter = i
+                was_arithmetic = False
+                arithmetic_operations = []
+                arithmetic_values_container = []
+
 
     # print(f"\nResults: {ret_list}")
     return ret_list
