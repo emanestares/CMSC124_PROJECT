@@ -31,6 +31,7 @@ allKeywords = {
     "MEBBE": "If-Else Optional",
     "UPPIN": "Increment By One",
     "NUMBR": "Integer Type",
+    "YARN": "Stringed Number",
     "TROOF": "Boolean Type",
     "MAEK": "Typecast",
     "WTF?": "Switch Start",

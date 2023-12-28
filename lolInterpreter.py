@@ -66,11 +66,16 @@ def is_int_convertible(number):
             int(number)
             return True
         except ValueError:
-            return False
+            
+            try:
+                int(number[1:-1])
+                return True
+            except ValueError:                
+                return False
 
 # Function that converts a given stringed number to its raw numerical value
 def get_numerical_value_from_string(number):
-    return int(number) if is_int_convertible(number) else round(float(number), 2) if is_float_convertible(number) else "<uninitialized>" 
+    return int(number) if is_int_convertible(number) else round(float(number), 2) if is_float_convertible(number) else number if (number[0] == "\"" and number[-1] == "\"") else number if number in ["WIN", "FAIL"] else "<uninitialized>" 
 
 # Function that executes syntax analysis
 def syntaxAnalysis(lexemesList):
@@ -233,10 +238,10 @@ ERROR = "error"
 
 # function that determines the datatype of a variable
 def get_datatype(value):
-    if (is_float_convertible(value)):
-        return TYPE_FLOAT
-    elif (is_int_convertible(value)):
+    if (is_int_convertible(value)):
         return TYPE_INTEGER
+    elif (is_float_convertible(value)):
+        return TYPE_FLOAT
     elif (get_numerical_value_from_string(value) == "<uninitialized>"):
         return TYPE_UNINITIALIZED
     elif (value in ["WIN", "FAIL"]):
@@ -252,27 +257,36 @@ def is_now_a(variable_name, value, type):
     return float(value)
 
 ###### implementation for MAEK ######
-def maek(variable, value, target_type):
+def maek(variable, target_type):
+
+    # get the value
+    variable_value = get_variable_value(variable)
+    print(f"\nvariable_value:\t{variable_value}.")
 
     # this is the current datatype of the variable
-    current_type = get_datatype(value)
+    current_type = get_datatype(variable_value)
 
+    # print notifications for now
+    print(f"current_type:\t{current_type}")
+    print(f"target_type:\t{target_type}\n")
 
+    # in case the same, just return the same value
+    if current_type == target_type: return variable_value
 
     # in case the current type is an integer (NUMBR)
     if current_type == TYPE_INTEGER:
 
         # return appropriately according to documentation
-        if target_type == TYPE_FLOAT:   return float(value)
-        if target_type == TYPE_STRINGED_NUMBER:  return f"{value}"
+        if target_type == TYPE_FLOAT:   return float(variable_value)
+        if target_type == TYPE_STRINGED_NUMBER:  return f"\"{int(variable_value)}\""
 
 
     # in case the current type is a float (NUMBAR)
     elif current_type == TYPE_FLOAT:
 
         # return appropriately according to documentation
-        if target_type == TYPE_INTEGER: return int(value)
-        if target_type == TYPE_STRINGED_NUMBER:  return f"{round(float(value), 2)}"
+        if target_type == TYPE_INTEGER: return int(get_numerical_value_from_string(variable_value))
+        if target_type == TYPE_STRINGED_NUMBER:  return f"\"{'{:.2f}'.format(get_numerical_value_from_string(variable_value))}\""
     
 
 
@@ -281,7 +295,9 @@ def maek(variable, value, target_type):
 
         # return appropriately according to documentation
         if target_type == TYPE_INTEGER: 
-            return get_numerical_value_from_string(value)
+            return int(get_numerical_value_from_string(variable_value[1:-1]))
+        if target_type == TYPE_FLOAT: 
+            return round(get_numerical_value_from_string(variable_value[1:-1]), 2)
 
 
 
@@ -297,7 +313,7 @@ def maek(variable, value, target_type):
     elif current_type == TYPE_BOOL:
 
         # return appropriately according to documentation
-        if (value == "WIN"):
+        if (variable_value == "WIN"):
             if target_type == TYPE_INTEGER:     return int(1)
             if target_type == TYPE_FLOAT:       return round(float(1), 1)
         else:
@@ -310,13 +326,14 @@ def maek(variable, value, target_type):
     if target_type == TYPE_BOOL:
 
         # return appropriately according to documentation
-        if (value == "" or value == 0):
+        if (variable_value == "" or variable_value == 0):
             return "FAIL"
         return "WIN"
     
     # if up to here, an uknown error!
     print("-------------------- UNKNOWN ERROR --------------------")
     return ERROR
+
 
 # function that performs a given arithmetic operation properly and its stringed numbers
 def perform_arithmetic_operation(operation, value_1, value_2):
@@ -366,6 +383,9 @@ def perform_arithmetic_operation(operation, value_1, value_2):
 def symbolTableAnalyzer(lexemesList):
     '''Function that executes syntax analysis given the list of lexemes.
     This function returns a list of identifiers and their values.'''
+
+    # access the global variable
+    global variables_list
 
     # reset variables list
     variables_list = [["Identifier", "Value"]]
@@ -419,12 +439,12 @@ def symbolTableAnalyzer(lexemesList):
 
                     # add properly if string
                     if lexemesList[current_lexeme_index+4][1] == "String Literal":
-                        variables_list.append([lexemesList[current_lexeme_index+1][0], f"{lexemesList[current_lexeme_index+3][0]}{lexemesList[current_lexeme_index+4][0]}{lexemesList[current_lexeme_index+5][0]}"])
+                        variables_list.append([lexemesList[current_lexeme_index+1][0], f"\"{lexemesList[current_lexeme_index+3][0]}{lexemesList[current_lexeme_index+4][0]}{lexemesList[current_lexeme_index+5][0]}\""])
 
                     # add properly if number or uninitialized
                     else:
                         variables_list.append([lexemesList[current_lexeme_index+1][0], f"{get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}"])
-
+                        print(f"Placed {get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}")
                 # should skip 3 more items after this iteration
                 lexeme_skip_counter = 3
 
@@ -450,7 +470,6 @@ def symbolTableAnalyzer(lexemesList):
                     # update if number or float
                     else:
                         # update if found
-                        print(f"Currently on {lexemesList[current_lexeme_index-1]}")
                         each_item[1] = lexemesList[current_lexeme_index+1][0]
 
 
@@ -490,7 +509,7 @@ def symbolTableAnalyzer(lexemesList):
                 print(f"Final value: {arithmetic_values_container[0]}\n")
 
                 # skip the number of times according sa i
-                lexeme_skip_counter = i
+                lexeme_skip_counter = i-2
                 was_arithmetic = False
                 arithmetic_operations = []
                 arithmetic_values_container = []
@@ -499,6 +518,29 @@ def symbolTableAnalyzer(lexemesList):
                 continue
 
             # if not previously arithmetic, check other cases
+
+        #  ============= CASE OF: MAEK ============= 
+        if identifier == "MAEK":
+
+            # if pagkatapos nung variable is "A", type is after nun
+            if lexemesList[current_lexeme_index+2][0] == "A":
+
+                # maek takes in variable name and target datatype
+                result = maek(lexemesList[current_lexeme_index+1][0], lexemesList[current_lexeme_index+3][0])
+                lexeme_skip_counter = 3
+                
+                # if (result != ERROR):
+                print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} A {lexemesList[current_lexeme_index+3][0]}: {result}")
+
+            # if in case YARN
+            else:
+                
+                 # maek takes in variable name and target datatype
+                result = maek(lexemesList[current_lexeme_index+1][0], lexemesList[current_lexeme_index+2][0])
+                lexeme_skip_counter = 2
+                
+                # if (result != ERROR):
+                print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} {lexemesList[current_lexeme_index+2][0]}: {result}")
 
 
     return variables_list
@@ -598,6 +640,11 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
 
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
+            if re.search("[0-9]\.[0-9]", token) != None and token[0] == "\"" and token[-1] == "\"":
+                existingLexemesDict[token] = "Stringed Number Literal"
+                existingLexemesList.append([token, "Stringed Number Literal"])
+                existingLexemesDict_newline_reference.append(current_newline_count)
+                continue
             if re.search("[0-9]\.[0-9]", token) != None:
                 existingLexemesDict[token] = "Float Literal"
                 existingLexemesList.append([token, "Float Literal"])
