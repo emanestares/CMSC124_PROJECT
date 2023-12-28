@@ -265,7 +265,7 @@ def perform_arithmetic_operation(operation, value_1, value_2):
         case _:
             pass      
 
-
+# function that executes syntax analysis given lexemes list.
 def symbolTableAnalyzer(lexemesList):
     '''Function that executes syntax analysis given the list of lexemes.
     This function returns a list of identifiers and their values.'''
@@ -355,15 +355,10 @@ def symbolTableAnalyzer(lexemesList):
                         # update if found
                         print(f"Currently on {lexemesList[current_lexeme_index-1]}")
                         each_item[1] = lexemesList[current_lexeme_index+1][0]
-                    # print(f"value: {value}")
-                    # print(f"also: {lexemesList[current_lexeme_index+1][1]}")
-                    # lexemesList[current_lexeme_index+1][1] = f"{get_stringed_number_value(lexemesList[current_lexeme_index+1][1]) + value}"
-                    # print(f"OK and got this: {lexemesList[current_lexeme_index+1][1]}")
 
 
 
-
-        # CASE OF: arithmetic operations
+        # ============= CASE OF: ARITHMETIC OPERATIONS ============= 
         if identifier in la.arithmetic_operations:
 
             # add to arithmetic operations
@@ -372,36 +367,6 @@ def symbolTableAnalyzer(lexemesList):
 
             # make the switch true
             was_arithmetic = True
-
-            # do not append anything yet. Check if there are others pa
-
-            # # variables here
-            # first_number = get_stringed_number_value(lexemesList[current_lexeme_index+1][0])
-            # second_number = get_stringed_number_value(lexemesList[current_lexeme_index+3][0])
-                
-            # # label to put in table
-            # arithmetic_label = f"{lexemesList[current_lexeme_index][0]} "
-            # arithmetic_label += f"{lexemesList[current_lexeme_index+1][0]} "
-            # arithmetic_label += f"{lexemesList[current_lexeme_index+2][0]} "
-            # arithmetic_label += f"{lexemesList[current_lexeme_index+3][0]}"
-
-            # match identifier:
-            #     case "SUM OF":          # addition
-            #         ret_list.append([arithmetic_label, f"{first_number+second_number}"])
-            #     case "MOD OF":          # modulo
-            #         ret_list.append([arithmetic_label, f"{first_number%second_number}"])
-            #     case "QUOSHUNT OF":     # division
-            #         ret_list.append([arithmetic_label, f"{first_number/second_number}"])
-            #     case "SMALLR OF":       # minimum
-            #         ret_list.append([arithmetic_label, f"{first_number if first_number<=second_number else second_number }"])
-            #     case "BIGGR OF":        # maximum
-            #         ret_list.append([arithmetic_label, f"{first_number if first_number>=second_number else second_number }"])
-            #     case "DIFF OF":
-            #         ret_list.append([arithmetic_label, f"{first_number-second_number}"])
-            #     case "PRODUKT OF":
-            #         ret_list.append([arithmetic_label, f"{first_number*second_number}"])
-            #     case _:
-            #         pass            
 
         # if term is hindi na arithmetic
         else:
@@ -417,13 +382,15 @@ def symbolTableAnalyzer(lexemesList):
                     i = i+2
 
                 # compute the value
+                    print("\nStarting arithmetic operations\n")
                 for each_operation in reversed(arithmetic_operations): 
+                    print(f"On queue for operation {each_operation}:")
                     value_1 = arithmetic_values_container.pop(0)
-                    print(f"Value_1: {value_1}")
+                    print(f"accumulator[0]: {value_1}")
                     value_2 = arithmetic_values_container.pop(0)
-                    print(f"Value_2: {value_2}")
+                    print(f"accumulator[1]: {value_2}\n")
                     arithmetic_values_container.insert(0, perform_arithmetic_operation(each_operation, value_1, value_2))
-                print(f"Got value: {arithmetic_values_container[0]}")
+                print(f"Final value: {arithmetic_values_container[0]}\n")
 
                 # skip the number of times according sa i
                 lexeme_skip_counter = i
@@ -431,8 +398,12 @@ def symbolTableAnalyzer(lexemesList):
                 arithmetic_operations = []
                 arithmetic_values_container = []
 
+                # afterwards, procced next item
+                continue
 
-    # print(f"\nResults: {ret_list}")
+            # if not previously arithmetic, check other cases
+
+
     return ret_list
 
 
