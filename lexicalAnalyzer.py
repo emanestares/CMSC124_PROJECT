@@ -123,19 +123,13 @@ iterator = {
         "OF": "done"
     },
     "O": {
-        "RLY?": {
-            "done"
-        }
+        "RLY?": "done"
     },
     "YA": {
-        "RLY": {
-            "done"
-        }
+        "RLY": "done"
     },
     "NO": {
-        "WAI": {
-            "done"
-        }
+        "WAI": "done"
     },
     "HOW":{
         "IZ":{

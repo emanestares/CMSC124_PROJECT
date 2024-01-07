@@ -524,6 +524,10 @@ def symbolTableAnalyzer(lexemesList):
     opFlag = False
     negateFlag = False
     rFlag = False
+    oRlyFlag = False
+    yaRlyFlag = False
+    noWaiFlag = False
+    oICFlag = False
 
     # do for every lexeme
     for each_item in lexemesList:
@@ -546,6 +550,37 @@ def symbolTableAnalyzer(lexemesList):
         # skip HAI and BYE
         if identifier in ["HAI", "KTHXBYE"]: continue
 
+        # ============= CASE OF: CONDITIONAL STATEMENTS ============= 
+        if noWaiFlag:
+            if identifier == "NO WAI":
+                noWaiFlag = False
+            continue
+
+        if oICFlag:
+            if identifier == "OIC":
+                oICFlag = False
+            else:
+                continue
+
+        if yaRlyFlag:
+            if identifier == "NO WAI":
+                yaRlyFlag = False
+                oICFlag = True
+
+        if identifier == "O RLY?":
+            oRlyFlag = True
+
+        elif oRlyFlag:
+            oRlyFlag = False
+
+            if variableValues["it"] == "WIN":
+                yaRlyFlag = True
+            else:
+                noWaiFlag = True
+
+            continue
+
+            
         # CASE OF: variable equalization
         if identifier == "I HAS A":
             
@@ -646,6 +681,7 @@ def symbolTableAnalyzer(lexemesList):
                 printList += " "
 
             elif identifier in ["WIN", "FAIL"] or each_item[1] in ["Integer Literal", "Float Literal"]:
+                print("FAIL", identifier)
                 printList += each_item[0]
                 printList += " "
         
@@ -655,8 +691,9 @@ def symbolTableAnalyzer(lexemesList):
         # ============= CASE OF: BOOLEAN OPERATIONS ============= 
         if identifier in la.boolean_operations_inf:
             booleanOp = identifier
-            was_boolean_inf = True    
-            opFlag = True
+            was_boolean_inf = True
+            if visibleFlag:
+                opFlag = True
         
         elif was_boolean_inf:
             if identifier == "\n":
@@ -679,7 +716,7 @@ def symbolTableAnalyzer(lexemesList):
                         set_variable_value(currentVariable, "FAIL")
                     rFlag = False
                 else:
-                    variableValues["it"] = answer
+                    variableValues["it"] = "WIN" if answer else "FAIL"
 
                     
                 operandList = []
@@ -699,7 +736,8 @@ def symbolTableAnalyzer(lexemesList):
             print("entered boolean op: " + identifier)
             booleanOp = identifier
             was_boolean = True
-            opFlag = True
+            if visibleFlag:
+                opFlag = True
         
         elif was_boolean:
             if anFlag:
@@ -745,7 +783,8 @@ def symbolTableAnalyzer(lexemesList):
 
         if identifier == "NOT":
             negateFlag = True
-            opFlag = True
+            if visibleFlag:
+                opFlag = True
 
         elif negateFlag:
             if variableValues[identifier] == "WIN":
@@ -754,9 +793,6 @@ def symbolTableAnalyzer(lexemesList):
                 variableValues["it"] = "WIN"
             
             negateFlag = False
-
-        # ============= CASE OF: CONDITIONAL STATEMENTS ============= 
-            
 
         # ============= CASE OF: ARITHMETIC OPERATIONS ============= 
         if identifier in la.arithmetic_operations:
