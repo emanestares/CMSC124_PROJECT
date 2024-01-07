@@ -511,6 +511,7 @@ def symbolTableAnalyzer(lexemesList):
     arithmetic_operations_counter = []
     arithmetic_values_container = []
     operandList = []
+    identifierPerLine = []
     printList = ""
     booleanOp = ""
     answer = ""
@@ -528,6 +529,9 @@ def symbolTableAnalyzer(lexemesList):
     yaRlyFlag = False
     noWaiFlag = False
     oICFlag = False
+    switchFlag = False
+    omgFlag = False
+    skipOmgFlag = False
 
     # do for every lexeme
     for each_item in lexemesList:
@@ -550,26 +554,91 @@ def symbolTableAnalyzer(lexemesList):
         # skip HAI and BYE
         if identifier in ["HAI", "KTHXBYE"]: continue
 
-        # ============= CASE OF: CONDITIONAL STATEMENTS ============= 
+        # ============= CASE OF: SWITCH-CASE STATEMENTS =============
+
+        # check for a line with only one identifier
+        if identifier == "\n":
+            if len(identifierPerLine) == 1:
+                # if a line has only one identifier, IT = value of identifier
+                if identifierPerLine[0][1] == "Variable Identifier":
+                    variableValues["it"] = variableValues[identifierPerLine[0][0]]
+                elif identifierPerLine[0][0] in ["WIN", "FAIL"] or identifierPerLine[0][1] in ["Integer Literal", "Float Literal"]:
+                    variableValues["it"] = identifierPerLine[0][0]
+            identifierPerLine = []
+        else:
+            identifierPerLine.append(each_item)
+
+        # if oic and in switch statement, turn off switchFlag
+        if identifier == "OIC" and switchFlag:
+            switchFlag = False
+
+        # if skipomgflag = True (omg literal != it value), skip block
+        if skipOmgFlag:
+            # if literal == omg or omgwtf, skipomgflag = False
+            if identifier == "OMG" or identifier == "OMGWTF":
+                skipOmgFlag = False
+            else:
+                continue
+
+        # if literal == wtf, its inside a switch cases
+        if identifier == "WTF?":
+            switchFlag = True
+        elif switchFlag:
+            # check for default, turn of switch case
+            if identifier == "OMGWTF":
+                switchFlag = False
+                continue
+
+            # check if gtfo, skip other cases
+            elif identifier == "GTFO":
+                switchFlag = False
+                oICFlag = True
+                continue
+
+            # if omg, omgflag = True
+            elif identifier == "OMG":
+                omgFlag = True
+
+            # if omgflag = true, check if value of it == omg literal
+            elif omgFlag:
+                # skip code block inside omg if IT value != omg literal
+                if each_item[1] == "Variable Identifier":
+                    if variableValues["it"] != variableValues[identifier]:
+                        skipOmgFlag = True
+                
+                else:
+                    if variableValues["it"] != identifier:
+                        skipOmgFlag = True
+
+                omgFlag = False
+
+
+        # ============= CASE OF: IF-ELSE STATEMENTS =============
+        
+        # if YA RLY case is true, skip until "NO WAI"
         if noWaiFlag:
             if identifier == "NO WAI":
                 noWaiFlag = False
             continue
 
+        # skip until oic was met
         if oICFlag:
             if identifier == "OIC":
                 oICFlag = False
             else:
                 continue
 
+        # if YA RLY cases is true, run until NO WAI then skip 
         if yaRlyFlag:
             if identifier == "NO WAI":
                 yaRlyFlag = False
                 oICFlag = True
 
+        # inside an if-else statement
         if identifier == "O RLY?":
             oRlyFlag = True
 
+        # if statement of condition is true, run the block under it and skip the other
         elif oRlyFlag:
             oRlyFlag = False
 
@@ -579,7 +648,6 @@ def symbolTableAnalyzer(lexemesList):
                 noWaiFlag = True
 
             continue
-
             
         # CASE OF: variable equalization
         if identifier == "I HAS A":
@@ -650,10 +718,8 @@ def symbolTableAnalyzer(lexemesList):
         
         # CASE OF: VISIBLE
         if visibleFlag:
-            print(printList)
             if each_item[0] == "\n":
                 if opFlag:
-                    print(variableValues)
                     printList += variableValues["it"]
                     printList += " "
                     opFlag = False
@@ -681,7 +747,6 @@ def symbolTableAnalyzer(lexemesList):
                 printList += " "
 
             elif identifier in ["WIN", "FAIL"] or each_item[1] in ["Integer Literal", "Float Literal"]:
-                print("FAIL", identifier)
                 printList += each_item[0]
                 printList += " "
         
@@ -717,7 +782,6 @@ def symbolTableAnalyzer(lexemesList):
                     rFlag = False
                 else:
                     variableValues["it"] = "WIN" if answer else "FAIL"
-
                     
                 operandList = []
                 was_boolean_inf = False
@@ -733,7 +797,6 @@ def symbolTableAnalyzer(lexemesList):
                 operandList.append(False)
         
         if identifier in la.boolean_operations:
-            print("entered boolean op: " + identifier)
             booleanOp = identifier
             was_boolean = True
             if visibleFlag:
@@ -741,8 +804,6 @@ def symbolTableAnalyzer(lexemesList):
         
         elif was_boolean:
             if anFlag:
-                print(identifier)
-                print(variableValues)
                 if variableValues[identifier] == "WIN":
                     value_2 = True
                 else:
@@ -1068,8 +1129,6 @@ def execute():
 
                 # if the last part of the token is '\"', then it closes the string literal
                 if token[-1] == "\"":
-
-                    print(stringTemp)
                     stringTemp += token # append the token
                     stringTemp += " "   # add a space
                     stringTemp = re.search(r'[^"]*"([^"]*)"[^"]*', stringTemp).group(1)   # clean the 
