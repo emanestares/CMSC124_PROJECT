@@ -841,8 +841,21 @@ def symbolTableAnalyzer(lexemesList):
             # skip properly
             lexeme_skip_counter = i
             
+
+        # The Theoreticals: 
+        
         #  ============= CASE OF: BOTH SAEM ============= 
         if identifier == "BOTH SAEM":
+            '''
+            Theoreticals:
+
+            Working:
+            BOTH SAEM <x> AN <y>
+
+            to implement:
+            BOTH SAEM <x> AN BIGGR OF <x> AN <y> BTW x >= y
+            BOTH SAEM <x> AN SMALLR OF <x> AN <y> BTW x <= y
+            '''
             
             # collect the strings
             value_1 = lexemesList[current_lexeme_index+1]
@@ -861,6 +874,17 @@ def symbolTableAnalyzer(lexemesList):
             
         #  ============= CASE OF: DIFFRINT ============= 
         if identifier == "DIFFRINT":
+            '''
+            Theoreticals:
+
+            Working:
+            DIFFRINT <x> AN <y>
+
+            to implement:
+            DIFFRINT <x> AN SMALLR OF <x> AN <y> BTW x > y
+            DIFFRINT <x> AN BIGGR OF <x> AN <y> BTW x < y
+            '''
+            
             
             # collect the strings
             value_1 = lexemesList[current_lexeme_index+1]
