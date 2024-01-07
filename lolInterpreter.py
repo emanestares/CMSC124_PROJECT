@@ -29,7 +29,7 @@ fileDirectory = ""
 lexemesList = [["Lexemes", "Classification"]]
 
 # contains all current dictionary descriptions
-existingLexemesDict = {}
+existingLexemesDict = {"it": ""}
 
 # contains all usable tokens including REPETITIONS
 existingLexemesList = []
@@ -246,6 +246,7 @@ def set_variable_value(variable, value):
     for value_pair in variables_list:
         if (value_pair[0] == variable):
             value_pair[1] = value
+            variableValues[variable] = value
             return value_pair[1]
     return ERROR
 
@@ -256,6 +257,7 @@ def make_variable_value(variable, value):
         if (value_pair[0] == variable):
             return ERROR
     variables_list.append([f"{variable}", value])
+    variableValues[variable] = value
     return value
 
 ###### global variables for casting ######
@@ -508,11 +510,17 @@ def symbolTableAnalyzer(lexemesList):
     arithmetic_operations = []
     arithmetic_operations_counter = []
     arithmetic_values_container = []
-    operationList = []
+    # operationList = []
     printList = ""
+    booleanOp = ""
+    answer = ""
     stringFlag = False
     was_arithmetic = False
+    was_boolean = False
+    anfFlag = False
     visibleFlag = False
+    opFlag = False
+    negateFlag = False
 
     # do for every lexeme
     for each_item in lexemesList:
@@ -556,10 +564,12 @@ def symbolTableAnalyzer(lexemesList):
                     # add properly if string
                     if lexemesList[current_lexeme_index+4][1] == "String Literal":
                         variables_list.append([lexemesList[current_lexeme_index+1][0], f"\"{lexemesList[current_lexeme_index+3][0]}{lexemesList[current_lexeme_index+4][0]}{lexemesList[current_lexeme_index+5][0]}\""])
-
+                        variableValues[lexemesList[current_lexeme_index+1][0]] = f"\"{lexemesList[current_lexeme_index+3][0]}{lexemesList[current_lexeme_index+4][0]}{lexemesList[current_lexeme_index+5][0]}\""
                     # add properly if number or uninitialized
                     else:
+                        print(variables_list)
                         variables_list.append([lexemesList[current_lexeme_index+1][0], f"{get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}"])
+                        variableValues[lexemesList[current_lexeme_index+1][0]] = f"{get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}"
                         print(f"Placed {get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}")
                 # should skip 3 more items after this iteration
                 lexeme_skip_counter = 3
@@ -572,7 +582,7 @@ def symbolTableAnalyzer(lexemesList):
         if identifier == "R":
             print("==================================================")
             value = get_numerical_value_from_string(lexemesList[current_lexeme_index+1][0])
-            
+
             # find the value and update value
             index = -1
             for each_item in variables_list:
@@ -596,8 +606,13 @@ def symbolTableAnalyzer(lexemesList):
         if visibleFlag:
             print(printList)
             if each_item[0] == "\n":
-                visible(printList+"\n")
+                if opFlag:
+                    print(variableValues)
+                    printList += variableValues["it"]
+                    printList += " "
+                    opFlag = False
 
+                visible(printList+"\n")
                 visibleFlag = False
                 printList = ""
                 continue
@@ -612,13 +627,65 @@ def symbolTableAnalyzer(lexemesList):
                 printList += each_item[0]
                 printList += " "
 
-            # need to be updated
-            if each_item[1] == "Variable Identifier":
-                printList += each_item[0]
+            elif each_item[1] == "Variable Identifier":
+                
+                if each_item[0] in variableValues.keys() and not opFlag:
+                    
+                    printList += variableValues[identifier]
                 printList += " "
         
         if identifier == "VISIBLE":
             visibleFlag = True
+
+        # ============= CASE OF: BOOLEAN OPERATIONS ============= 
+        if identifier in la.boolean_operations:
+            booleanOp = identifier
+            was_boolean = True
+            opFlag = True
+        
+        elif was_boolean:
+            if anfFlag:
+                print(identifier)
+                if variableValues[identifier] == "WIN":
+                    value_2 = True
+                else:
+                    value_2 = False
+
+                if booleanOp == "BOTH OF":
+                    answer = value_1 and value_2
+                elif booleanOp == "EITHER OF":
+                    answer = value_1 or value_2
+                elif booleanOp == "WON OF":
+                    answer = value_1 != value_2
+
+                if answer:
+                    variableValues["it"] = "WIN"
+                else:
+                    variableValues["it"] = "FAIL"
+                
+                anfFlag = False
+                was_boolean = False
+
+            elif identifier == "AN":
+                anfFlag = True
+
+            else:
+                if variableValues[identifier] == "WIN":
+                    value_1 = True
+                else:
+                    value_1 = False
+
+        if identifier == "NOT":
+            negateFlag = True
+            opFlag = True
+
+        elif negateFlag:
+            if variableValues[identifier] == "WIN":
+                variableValues["it"] = "FAIL"
+            elif variableValues[identifier] == "FAIL":
+                variableValues["it"] = "WIN"
+            
+            negateFlag = False
 
         # ============= CASE OF: ARITHMETIC OPERATIONS ============= 
         if identifier in la.arithmetic_operations:
@@ -760,12 +827,13 @@ def execute():
     
     # iterate through each token in the tempList
     current_newline_count = 1
-    
+    print(tempList)
     for token in tempList:
         # if BTW is encountered, ignore tokens until the end of the line
         if token == "BTW": 
             btwFlag = True
             current_newline_count += 1
+
         # if BTW keyterm
         elif btwFlag == True:
             if token == "\n":       
@@ -776,6 +844,7 @@ def execute():
                 existingLexemesList.append([token, "Comment"])
                 existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
+
         # if OBTW is encounted, ignore tokens until TLDR has been reached
         if token == "OBTW": obtwFlag = True
         elif obtwFlag == True:
@@ -786,6 +855,7 @@ def execute():
                 existingLexemesList.append([token, "Comment"])          
                 existingLexemesDict_newline_reference.append(current_newline_count)         
                 continue
+
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
             if re.search("[0-9]\.[0-9]", token) != None and token[0] == "\"" and token[-1] == "\"":
@@ -803,11 +873,12 @@ def execute():
                 existingLexemesList.append([token, "Integer Literal"])
                 existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
+
             # if token is "", add a space then continue iterating
             if token == "":
                 stringTemp += " "
                 continue            
-            # if the first character of the token is '\"', then it is part of a string literal 
+
             if token[0] == "\"" and not stringFlag:
                 existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
                 existingLexemesList.append(["\"", "String Delimeter"])
@@ -815,35 +886,41 @@ def execute():
                 stringTemp += token     # append the token
                 stringTemp += " "       # add a space
                 stringFlag = True       # next token will be part of the string
-                
-                if token[-1] == "\"":
+            # if the previous token is an unpaired '\"'
+                       
+                if token[-1] == "\"" and token != "\"":
                     existingLexemesDict[f"{token[1:-1]}"] = "String Literal"   # mark it as a string literal
                     existingLexemesList.append([f"{token[1:-1]}", "String Literal"])
                     existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
                     existingLexemesList.append(["\"", "String Delimeter"])
                     stringFlag = False
                     stringTemp = ""
-
+            
             # if the previous token is an unpaired '\"'
             elif stringFlag == True:
+
                 # if the last part of the token is '\"', then it closes the string literal
                 if token[-1] == "\"":
+
+                    print(stringTemp)
                     stringTemp += token # append the token
                     stringTemp += " "   # add a space
                     stringTemp = re.search(r'[^"]*"([^"]*)"[^"]*', stringTemp).group(1)   # clean the 
+
                     existingLexemesDict[f"{stringTemp}"] = "String Literal"   # mark it as a string literal
                     existingLexemesList.append([f"{stringTemp}", "String Literal"])
+
                     existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
                     existingLexemesList.append(["\"", "String Delimeter"])
                     
                     existingLexemesDict_newline_reference.append(current_newline_count)
+
                     stringFlag = False  # next token is no longer part of the string
                     stringTemp = ""     # reset
                 # the string is still unclosed, add it to stringTemp
                 else:
                     stringTemp += token # append the token
                     # print(stringTemp)
-
             # not a string literal
             else:
                 # update the stack variable for string
@@ -852,6 +929,7 @@ def execute():
                 # check if item is in the iterator
                 if token in current_iterator:
                     key_value = current_iterator[token] # acquire the next value from iterator
+
                     # if there's no more afterwards
                     if key_value == "done":
                         existingLexemesDict[stack_string_variable] = la.allKeywords[stack_string_variable]  # update using the stack_string_variable
@@ -874,6 +952,7 @@ def execute():
             existingLexemesDict[token] = la.allKeywords[token]
             existingLexemesList.append([token, la.allKeywords[token]])
             existingLexemesDict_newline_reference.append(current_newline_count)
+
     # reset the lexemesList
     lexemesList = [["Lexemes", "Classification"]]
 

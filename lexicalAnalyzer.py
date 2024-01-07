@@ -65,6 +65,17 @@ allKeywords = {
     "\n": "Line Break"
 }
 
+boolean_operations = [
+    "BOTH OF",
+    "EITHER OF",
+    "WON OF"
+]
+
+boolean_operations_inf = [
+    "ANY OF",
+    "ALL OF"
+]
+
 arithmetic_operations = [
     "SUM OF", 
     "MOD OF", 
