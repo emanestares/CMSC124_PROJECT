@@ -36,6 +36,7 @@ existingLexemesList = []
 
 # contains the variable names
 variable_names = []
+variableValues = {}
 
 SKIPPING_KEYWORDS = [
     "HAI", "KTHXBYE"
@@ -87,7 +88,7 @@ def get_numerical_value_from_string(number):
 
 # Function that executes syntax analysis
 def syntaxAnalysis(lexemesList):
-    global terminal, existingLexemesDict_newline_reference, variable_names
+    global terminal, existingLexemesDict_newline_reference, variable_names, variableValues
 
     # variable that stores the syntax errors list, for better printing
     syntax_error_list = []
@@ -97,6 +98,8 @@ def syntaxAnalysis(lexemesList):
         syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[0]}]: Start of code not found.\n")
 
     print(f"{len(lexemesList)} vs {len(existingLexemesDict_newline_reference)}")
+
+    print(existingLexemesDict_newline_reference)
 
     # go through the other items
     count = -1
@@ -139,6 +142,7 @@ def syntaxAnalysis(lexemesList):
                     else:
                         syntax_error_list.insert(0, f"Syntax Correct [line {existingLexemesDict_newline_reference[count+1]}]. Added '{lexemesList[count+3][0]}' variable.\n")
                         variable_names.append(lexemesList[count+3][0])
+                        variableValues[lexemesList[count+3][0]] = ""
                         continue
 
 
@@ -209,6 +213,24 @@ def syntaxAnalysis(lexemesList):
 
 # global variable: list of global variables
 variables_list = [["Identifier", "Value"]]
+
+# print
+def visible(valueToPrint):
+    global terminal
+    terminal.configure(state = "normal")
+
+    terminal.insert(tk.END, valueToPrint)
+
+    terminal.configure(state = "disabled")
+
+# get user input
+def gimmeh(variable):
+    global terminal
+
+    terminal.configure(state = "normal")
+    terminal.insert(tk.END, "\n ")
+
+    terminal.configure(state = "disabled")
 
 # helper function that returns the value of a specific variable
 def get_variable_value(variable):
@@ -437,42 +459,37 @@ def perform_arithmetic_operation(operation, value_1, value_2):
     first_number = get_numerical_value_from_string(value_1)
     second_number = get_numerical_value_from_string(value_2)
         
-    # switch statement
-    match operation:
-
-        # addition
-        case "SUM OF":          
-            return first_number + second_number
+    # addition
+    if operation == "SUM OF":          
+        return first_number + second_number
         
-        # modulo
-        case "MOD OF":
-            return first_number%second_number
+    # modulo
+    elif operation == "MOD OF":
+        return first_number%second_number
         
-        # division
-        case "QUOSHUNT OF":
-            return first_number/second_number
-        
-        # minimum
-        case "SMALLR OF":
-            return first_number if first_number<=second_number else second_number
-        
-        
-        # maximum
-        case "BIGGR OF":        
-            return first_number if first_number>=second_number else second_number
-        
-        # difference
-        case "DIFF OF":
-            return first_number-second_number
-        
-        
-        # multiplication
-        case "PRODUKT OF":
-            return first_number*second_number
-        
-        # default
-        case _:
-            pass      
+    # division
+    elif operation ==  "QUOSHUNT OF":
+        return first_number/second_number
+    
+    # minimum
+    elif operation ==  "SMALLR OF":
+        return first_number if first_number<=second_number else second_number
+    
+    # maximum
+    elif operation ==  "BIGGR OF":        
+        return first_number if first_number>=second_number else second_number
+    
+    # difference
+    elif operation ==  "DIFF OF":
+        return first_number-second_number
+    
+    # multiplication
+    elif operation ==  "PRODUKT OF":
+        return first_number*second_number
+    
+    # default
+    else:
+        pass      
 
 # function that executes syntax analysis given lexemes list.
 def symbolTableAnalyzer(lexemesList):
@@ -491,7 +508,11 @@ def symbolTableAnalyzer(lexemesList):
     arithmetic_operations = []
     arithmetic_operations_counter = []
     arithmetic_values_container = []
+    operationList = []
+    printList = ""
+    stringFlag = False
     was_arithmetic = False
+    visibleFlag = False
 
     # do for every lexeme
     for each_item in lexemesList:
@@ -567,7 +588,37 @@ def symbolTableAnalyzer(lexemesList):
                         # update if found
                         each_item[1] = lexemesList[current_lexeme_index+1][0]
 
+        # CASE OF: GIMMEH          
+        if identifier == "GIMMEH":
+            gimmeh(lexemesList[current_lexeme_index+1][0])
+        
+        # CASE OF: VISIBLE
+        if visibleFlag:
+            print(printList)
+            if each_item[0] == "\n":
+                visible(printList+"\n")
 
+                visibleFlag = False
+                printList = ""
+                continue
+            
+            if each_item[0] == "\"":
+                if stringFlag:
+                    stringFlag = False
+                else:
+                    stringFlag = True
+            
+            if stringFlag and each_item[0] != "\"":
+                printList += each_item[0]
+                printList += " "
+
+            # need to be updated
+            if each_item[1] == "Variable Identifier":
+                printList += each_item[0]
+                printList += " "
+        
+        if identifier == "VISIBLE":
+            visibleFlag = True
 
         # ============= CASE OF: ARITHMETIC OPERATIONS ============= 
         if identifier in la.arithmetic_operations:
@@ -646,25 +697,16 @@ def symbolTableAnalyzer(lexemesList):
             lexeme_skip_counter = 1
             print(f"IS_NOW_A successfully implemented.")
             
-
-
     return variables_list
 
 
-
-#--- chooseFile [select button] ---#
-# - opens filedialog; open file from directory
-# - tokenize each lexemes
-# - appends the file to the text editor
-# - classifies each lexeme; display to the lexeme table
-def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
+def execute():
     tempList = []
     stringTemp = ""
-    codeString = ""
     stringFlag = False
     btwFlag = False
     obtwFlag = False
-    fileDirectory = filedialog.askopenfilename()
+    editorContent = textEditor.get("0.0", tk.END).split("\n")
 
     # reset existing lexemes dictionary
     global existingLexemesDict, lexemesList, terminal, existingLexemesDict_newline_reference
@@ -677,32 +719,11 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     terminal.delete('1.0', tk.END)
     terminal.configure(state = "disabled")
 
-    # early exit if no file directory selected
-    if fileDirectory == "":
-        return 0
-    
-    # early exit if chosen file's extension is not lol
-    if fileDirectory.split(".")[1] != "lol":
-        fileDirLabel.configure(text="Selected file is not a LOL CODE.")
-        return 0
-
-    # open file
-    inputFile = open(fileDirectory, "r")
-
-    # get directory of file
-    fileDirLabel.configure(text=fileDirectory.split("/")[-1])
-
-    # iterate through file
-    line_count = 0
-    for line in inputFile:
-        line_count += 1
-        codeString += f'{"{:02d}".format(line_count)}   |     ' + line                  # store all lines in codeString  
-
+    for line in editorContent:
         if tempList != []:
             tempList += "\n"
 
         tempList += line.strip().split(" ")    # split on spaces then add each to the tempList
-
 
     # variable that stores the current string for strings with two or more values
     # this will be empty if placed in dictionary, else not empty
@@ -775,9 +796,10 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
                 stringTemp += " "       # add a space
                 stringFlag = True       # next token will be part of the string
             # if the previous token is an unpaired '\"'
-            elif stringFlag == True:
+            if stringFlag == True:
                 # if the last part of the token is '\"', then it closes the string literal
-                if token[-1] == "\"":
+                if token[0] == "\"":
+                    print(stringTemp)
                     stringTemp += token # append the token
                     stringTemp += " "   # add a space
                     stringTemp = re.search(r'[^"]*"([^"]*)"[^"]*', stringTemp).group(1)   # clean the 
@@ -835,12 +857,8 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     # for token in existingLexemesDict: lexemesList.append([token, existingLexemesDict[token]])
     for token in existingLexemesList: lexemesList.append([token[0], existingLexemesDict[token[0]]])
     
-    # reset the text field
-    textEditor.delete('1.0', tk.END)
+    print(lexemesList)
 
-    # display code in the text field
-    textEditor.insert("0.0", codeString)
-    
     for widget in lexemesFrame.winfo_children(): widget.destroy()
 
     lexemesLabel = tk.CTkLabel(lexemesFrame,text= "Lexemes")
@@ -848,7 +866,7 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
 
     # do not added Line Breaks or Comments to the lexemesTable
     filtered_lexeme_list = [x for x in lexemesList if not(x[1]== "Line Break" or x[1]=="Comment")]
-    lexemesTable = CTkTable(lexemesFrame, row = len(lexemesList), column = 2, values = filtered_lexeme_list)
+    lexemesTable = CTkTable(lexemesFrame, row = len(filtered_lexeme_list), column = 2, values = filtered_lexeme_list)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
 
     # TODO: for testing; should be removed
@@ -871,12 +889,49 @@ def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
     symbolTable.pack(expand=True, fill="both", padx=5, pady=5)
 
 
+#--- chooseFile [select button] ---#
+# - opens filedialog; open file from directory
+# - tokenize each lexemes
+# - appends the file to the text editor
+# - classifies each lexeme; display to the lexeme table
+def chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame):
+    codeString = ""
+    fileDirectory = filedialog.askopenfilename()
+
+    # early exit if no file directory selected
+    if fileDirectory == "":
+        return 0
+    
+    # early exit if chosen file's extension is not lol
+    if fileDirectory.split(".")[1] != "lol":
+        fileDirLabel.configure(text="Selected file is not a LOL CODE.")
+        return 0
+
+    # open file
+    inputFile = open(fileDirectory, "r")
+
+    # get directory of file
+    fileDirLabel.configure(text=fileDirectory.split("/")[-1])
+
+    # iterate through file
+    # line_count = 0
+    for line in inputFile:
+        # line_count += 1
+        # codeString += f'{"{:02d}".format(line_count)}   |     ' + line                  # store all lines in codeString  
+        codeString += line
+
+    # reset the text field
+    textEditor.delete('1.0', tk.END)
+
+    # display code in the text field
+    textEditor.insert("0.0", codeString)
+
 # draw the main window
 def draw():
     '''Function that draws the main window.'''
 
     # access the global variables
-    global fileDirectory, lexemesList, existingLexemesDict, terminal
+    global fileDirectory, lexemesList, existingLexemesDict, terminal, textEditor, lexemesFrame, symbolTableFrame
 
     #--- initializing customtkinter ---#
     root = tk.CTk()
@@ -929,11 +984,12 @@ def draw():
     symbolTable.pack(expand=True, fill="both", padx=5, pady=5)
 
     #--- Execute/Rub Button and Console ---#
-    executeButton = tk.CTkButton(terminalFrame, text = "EXECUTE")
+    executeButton = tk.CTkButton(terminalFrame, text = "EXECUTE", command = execute)
     executeButton.pack(expand=True, fill="both", padx=5, pady=5)
 
     terminal = tk.CTkTextbox(terminalFrame, width = 950, height=265, state = "disabled")
     terminal.pack(expand=True, fill="both", padx=5, pady=5)
+
     root.mainloop()
 
 
