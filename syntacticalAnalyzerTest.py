@@ -4,10 +4,10 @@ test_case = [['HAI', 'Start of Code'], ['\n', 'Line Break'], ['I HAS A', 'Variab
 # TODO: recognize commas
 
 # TODO:
-# [ ] unary opeartors
-# [ ] check if operator is binary or has infinite arity
+# [X] unary opeartors
+# [X] check if operator is binary or has infinite arity
 #   - check arithmetic operators
-# [ ] booleans:
+# [X] booleans:
 #   unary:      NOT <x>
 #   binary:     BOTH OF <x> [AN] <y>
 #               EITHER OF <x> [AN] <y>
@@ -118,6 +118,23 @@ TOK_BIGGER_OF       = "Bigger Of"
 
 TOK_ARITHMETIC = [TOK_ADDITION, TOK_SUBTRACTION, TOK_MULTIPLICATION, TOK_DIVISION, TOK_MODULO, TOK_SMALLER_OF, TOK_BIGGER_OF]
 
+# Booleans
+TOK_TRUE_VALUE  = "True Value"
+TOK_FALSE_VALUE = "False Value"
+
+TOK_NEGATION        = "Negation"
+TOK_AND_OPERATOR    = "And Operator"
+TOK_OR_OPERATOR     = "Or Operator"
+TOK_XOR_OPERATION   = "XOR Operation"
+TOK_INFINITE_ARITY_END = "Infinite Arity End"
+TOK_OR_OPERATOR_INFINITE_ARGS   = "Or Operator Infinite Args"
+TOK_AND_OPERATOR_INFINTIE_ARGS  = "And Operator Infinite Args"
+
+TOK_BOOLEAN             = [TOK_NEGATION, TOK_AND_OPERATOR, TOK_OR_OPERATOR, TOK_XOR_OPERATION, TOK_OR_OPERATOR_INFINITE_ARGS, TOK_AND_OPERATOR_INFINTIE_ARGS]
+TOK_BOOLEAN_UNARY       = [TOK_NEGATION]
+TOK_BOOLEAN_BINARY      = [TOK_AND_OPERATOR, TOK_OR_OPERATOR, TOK_XOR_OPERATION]
+TOK_BOOLEAN_INFINITE    = [TOK_OR_OPERATOR_INFINITE_ARGS, TOK_AND_OPERATOR_INFINTIE_ARGS]
+
 TOK_BANNED_FUNCTION = [TOK_FUNCTION_START, TOK_START_OF_CODE]
 
 # TODO: Simplify
@@ -125,8 +142,10 @@ TOK_BANNED_FUNCTION = [TOK_FUNCTION_START, TOK_START_OF_CODE]
 # I HAS A <var> ITZ <expr> = Node(Variable Declaration, self.var(), self.expr)
 
 # GRAMMAR
-G_START_OF_CODE         = [TOK_START_OF_CODE]
+G_START_OF_CODE         = [TOK_START_OF_CODE, TOK_FLOAT_LITERAL]
 G_VARIABLE_DECLARATION  = [[TOK_VARIABLE_DECLARATION, TOK_VARIABLE_IDENTIFIER, TOK_ASSIGMENT_OPERATOR, TOK_LITERAL],
+                            [TOK_VARIABLE_DECLARATION, TOK_VARIABLE_IDENTIFIER, TOK_ASSIGMENT_OPERATOR, TOK_TRUE_VALUE],
+                            [TOK_VARIABLE_DECLARATION, TOK_VARIABLE_IDENTIFIER, TOK_ASSIGMENT_OPERATOR, TOK_FALSE_VALUE],
                             [TOK_VARIABLE_DECLARATION, TOK_VARIABLE_IDENTIFIER]]
 G_VARIABLE_ASSIGNMENT   = [TOK_VARIABLE_IDENTIFIER, TOK_R_KEYWORD, TOK_LITERAL]
 G_LINE_ENDING           = [[TOK_LINE_BREAK],
@@ -135,6 +154,8 @@ G_LINE_ENDING           = [[TOK_LINE_BREAK],
 G_END_OF_CODE           = [TOK_END_OF_CODE]
 G_ARITHMETIC            = [TOK_ARITHMETIC, [*TOK_NON_STRING_LITERAL, TOK_VARIABLE_IDENTIFIER], TOK_AN_KEYWORD, [*TOK_NON_STRING_LITERAL, TOK_VARIABLE_IDENTIFIER]]
 G_RETURN_EXPRESSION     = [TOK_RETURN_EXPRESSION, [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER]]
+G_BOOLEAN_UNARY         = [TOK_BOOLEAN_UNARY, [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER, TOK_TRUE_VALUE, TOK_FALSE_VALUE]]
+G_BOOLEAN_BINARY        = [TOK_BOOLEAN_BINARY, [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER, TOK_TRUE_VALUE, TOK_FALSE_VALUE], TOK_AN_KEYWORD, [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER, TOK_TRUE_VALUE, TOK_FALSE_VALUE]]
 
 class Parser:
     def __init__(self, lexemesList):
@@ -181,6 +202,7 @@ class Parser:
 
         for x in grammar:
             self.buf.append(self.get_token())
+            print(self.buf)
             if (self.buf[len(self.buf)-1][1] not in x):      
                 if not self.supress_error: self.throw_error(self.get_token_class(), x)
                 return False
@@ -232,9 +254,10 @@ class Parser:
 
         # iterate through the grammar list
         for grammar in G_VARIABLE_DECLARATION:
+            print(grammar, self.check_valid(grammar))
             if self.check_valid(grammar):
-                if G_VARIABLE_DECLARATION.index(grammar) == 0:      return Node(f"Statement: {TOK_VARIABLE_DECLARATION}", self.buf[1][0], self.buf[3][0])   # I HAS A <VARIABLE_IDENTIFIER> ITZ <LITERAL> <LINE_BREAK>
-                elif G_VARIABLE_DECLARATION.index(grammar) == 1:    return Node(f"Statement: {TOK_VARIABLE_DECLARATION}", self.buf[1][0], ";")              # I HAS A <VARIABLE_IDENTIFIER> <LINE_BREAK>
+                if G_VARIABLE_DECLARATION.index(grammar) in [0, 1, 2]:  return Node(f"Statement: {TOK_VARIABLE_DECLARATION}", self.buf[1][0], self.buf[3][0])   # I HAS A <VARIABLE_IDENTIFIER> ITZ <LITERAL> <LINE_BREAK>
+                elif G_VARIABLE_DECLARATION.index(grammar) == 3:        return Node(f"Statement: {TOK_VARIABLE_DECLARATION}", self.buf[1][0], ";")              # I HAS A <VARIABLE_IDENTIFIER> <LINE_BREAK>
             else:
                 self.cursor = self.cursor - len(self.buf) + 1       # reset cursor         
                 if G_VARIABLE_DECLARATION.index(grammar)+1 == len(G_VARIABLE_DECLARATION): self.supress_error = False   # stop supressing errors if the next grammar is the last in the grammar list
@@ -246,22 +269,69 @@ class Parser:
 
     # handle print statement
     def print_statement(self):
+        an_flag = False
         print_buf = []
         self.increment_cursor()
 
         # keep iterating until error or new line
         while(True):
             next_token = self.get_token()
+            print(next_token)
             self.increment_cursor()
 
             if next_token[1] == TOK_LINE_BREAK:                             return Node(f"Statement: {TOK_PRINT_STATEMENT}", print_buf, ";")    # end print 
-            elif next_token[1] in [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER]:  print_buf.append(Node("Argument: ", next_token[1], next_token[0]))  # continue print
+            elif next_token[1] in [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER]: 
+                print_buf.append(Node("Argument: ", next_token[1], next_token[0]))  # continue print
+                an_flag = True
+                continue
+            elif next_token[1] == TOK_AN_KEYWORD and an_flag:
+                an_flag = False
+                continue
+            elif next_token[1] in TOK_BOOLEAN:
+                print_buf.append(self.boolean_statement())
+                continue
             elif next_token[1] == TOK_STRING_DELIMETER:                     continue                                                            # ignore \"
             else:                                                           break                                                               # error
                 
         # return error
         self.throw_error(next_token[1], [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER])
         return self.return_error()
+
+    def boolean_statement(self):
+        current_token_class = self.get_token_class()
+
+        if current_token_class in TOK_BOOLEAN_UNARY:
+            # NOT
+            if self.check_valid(G_BOOLEAN_UNARY):       return Node(f"Statement: {current_token_class}", self.buf[0][1], ";")
+            return self.return_error()   
+        elif current_token_class in TOK_BOOLEAN_BINARY:
+            # BOTH OF, EITHER OF, WON OF
+            if self.check_valid(G_BOOLEAN_BINARY):      return Node(f"Statement: {current_token_class}", self.buf[0][1], self.buf[0][3])
+            return self.return_error()
+        else:
+            # ALL OF, ANY OF
+            an_flag = False
+            expression_list = []
+
+            while(True):
+                next_token = self.get_token()
+                self.increment_cursor()
+
+                if next_token[1] == TOK_INFINITE_ARITY_END and not an_flag: 
+                    return Node(f"Statement: {current_token_class}", ' '.join(map(str, expression_list)), ";")
+                elif next_token[1] in [*TOK_LITERAL, TOK_VARIABLE_IDENTIFIER, TOK_TRUE_VALUE, TOK_FALSE_VALUE] and not an_flag:
+                    expression_list.append(next_token)
+                    an_flag = True
+                    continue
+                elif next_token[1] == TOK_AN_KEYWORD:
+                    an_flag = False
+                    continue
+                else:
+                    return self.return_error()
+
+
+
+
 
     # handle comments
     def comment_start(self):
@@ -349,6 +419,7 @@ class Parser:
 
         # keep iterating until end of lexeme list
         while(self.cursor != self.length):
+            print("[!] checking: ", self.lexemesList[self.cursor])
             Node.print_info(self.evaluate())
             if self.error: break        
 
