@@ -510,17 +510,20 @@ def symbolTableAnalyzer(lexemesList):
     arithmetic_operations = []
     arithmetic_operations_counter = []
     arithmetic_values_container = []
-    # operationList = []
+    operandList = []
     printList = ""
     booleanOp = ""
     answer = ""
+    currentVariable = ""
     stringFlag = False
     was_arithmetic = False
     was_boolean = False
-    anfFlag = False
+    was_boolean_inf = False
+    anFlag = False
     visibleFlag = False
     opFlag = False
     negateFlag = False
+    rFlag = False
 
     # do for every lexeme
     for each_item in lexemesList:
@@ -581,22 +584,24 @@ def symbolTableAnalyzer(lexemesList):
         # CASE OF: R
         if identifier == "R":
             print("==================================================")
-            value = get_numerical_value_from_string(lexemesList[current_lexeme_index+1][0])
+            currentVariable = lexemesList[current_lexeme_index-1][0]
+            rFlag = True
+            # value = get_numerical_value_from_string(lexemesList[current_lexeme_index+1][0])
 
-            # find the value and update value
-            index = -1
-            for each_item in variables_list:
-                index += 1
-                if each_item[0] == lexemesList[current_lexeme_index-1][0]:
+            # # find the value and update value
+            # index = -1
+            # for each_item in variables_list:
+            #     index += 1
+            #     if each_item[0] == lexemesList[current_lexeme_index-1][0]:
 
-                    # update if string
-                    if lexemesList[current_lexeme_index+2][1] == "String Literal":
-                        each_item[1] = f"{lexemesList[current_lexeme_index+1][0]}{lexemesList[current_lexeme_index+2][0]}{lexemesList[current_lexeme_index+3][0]}"
+            #         # update if string
+            #         if lexemesList[current_lexeme_index+2][1] == "String Literal":
+            #             each_item[1] = f"{lexemesList[current_lexeme_index+1][0]}{lexemesList[current_lexeme_index+2][0]}{lexemesList[current_lexeme_index+3][0]}"
                     
-                    # update if number or float
-                    else:
-                        # update if found
-                        each_item[1] = lexemesList[current_lexeme_index+1][0]
+            #         # update if number or float
+            #         else:
+            #             # update if found
+            #             each_item[1] = lexemesList[current_lexeme_index+1][0]
 
         # CASE OF: GIMMEH          
         if identifier == "GIMMEH":
@@ -638,13 +643,52 @@ def symbolTableAnalyzer(lexemesList):
             visibleFlag = True
 
         # ============= CASE OF: BOOLEAN OPERATIONS ============= 
+        if identifier in la.boolean_operations_inf:
+            booleanOp = identifier
+            was_boolean_inf = True    
+            opFlag = True
+        
+        elif was_boolean_inf:
+            if identifier == "\n":
+                if booleanOp == "ALL OF":
+                    answer = True
+                elif booleanOp == "ANY OF":
+                    answer = False
+
+                for boolean in operandList:
+                    if booleanOp == "ALL OF":
+                        answer = answer and boolean
+                    elif booleanOp == "ANY OF":
+                        answer = answer or boolean
+
+                if rFlag:
+                    variableValues[currentVariable] = answer
+                    set_variable_value(currentVariable, answer)
+                    rFlag = False
+                else:
+                    variableValues["it"] = answer
+
+                    
+                operandList = []
+                was_boolean_inf = False
+
+            elif each_item[1] == "Variable Identifier":
+                if variableValues[identifier] == "WIN":
+                    operandList.append(True)
+                elif variableValues[identifier] == "FAIL":
+                    operandList.append(False)
+            elif identifier == "WIN":
+                operandList.append(True)
+            elif identifier == "FAIL":
+                operandList.append(False)
+        
         if identifier in la.boolean_operations:
             booleanOp = identifier
             was_boolean = True
             opFlag = True
         
         elif was_boolean:
-            if anfFlag:
+            if anFlag:
                 print(identifier)
                 if variableValues[identifier] == "WIN":
                     value_2 = True
@@ -658,16 +702,25 @@ def symbolTableAnalyzer(lexemesList):
                 elif booleanOp == "WON OF":
                     answer = value_1 != value_2
 
-                if answer:
-                    variableValues["it"] = "WIN"
+                if rFlag:
+                    if answer:
+                        variableValues[currentVariable] = "WIN"
+                        set_variable_value(currentVariable, "WIN")
+                    else:
+                        variableValues[currentVariable] = "FAIL"
+                        set_variable_value(currentVariable, "FAIL")
+                    rFlag = False
                 else:
-                    variableValues["it"] = "FAIL"
+                    if answer:
+                        variableValues["it"] = "WIN"
+                    else:
+                        variableValues["it"] = "FAIL"
                 
-                anfFlag = False
+                anFlag = False
                 was_boolean = False
 
             elif identifier == "AN":
-                anfFlag = True
+                anFlag = True
 
             else:
                 if variableValues[identifier] == "WIN":
