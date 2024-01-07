@@ -697,6 +697,31 @@ def symbolTableAnalyzer(lexemesList):
             lexeme_skip_counter = 1
             print(f"IS_NOW_A successfully implemented.")
             
+        #  ============= CASE OF: SMOOSH ============= 
+        if identifier == "SMOOSH":
+            
+            # collect the strings
+            result = " "
+
+            # append appropriately iteratively
+            i=0
+            while(True):    
+                if (lexemesList[current_lexeme_index+i+1][0] == "\""):
+                    result += lexemesList[current_lexeme_index+i+2][0]
+                    i += 4
+                elif (lexemesList[current_lexeme_index+i][0] == "AN"):
+                    result += lexemesList[current_lexeme_index+i+1][0]
+                    i += 2
+                else:
+                    break
+            
+            # result is now complete
+            print(f"Result for SMOOSH: {result}")
+
+            # skip properly
+            lexeme_skip_counter = i
+
+
     return variables_list
 
 
