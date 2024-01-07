@@ -894,6 +894,66 @@ def symbolTableAnalyzer(lexemesList):
 
             # skip properly
             lexeme_skip_counter = i
+            
+
+        # The Theoreticals: 
+        
+        #  ============= CASE OF: BOTH SAEM ============= 
+        if identifier == "BOTH SAEM":
+            '''
+            Theoreticals:
+
+            Working:
+            BOTH SAEM <x> AN <y>
+
+            to implement soon:
+            BOTH SAEM <x> AN BIGGR OF <x> AN <y> BTW x >= y
+            BOTH SAEM <x> AN SMALLR OF <x> AN <y> BTW x <= y
+            '''
+            
+            # collect the strings
+            value_1 = lexemesList[current_lexeme_index+1]
+            value_2 = lexemesList[current_lexeme_index+3]
+            result = ""
+
+            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) == get_datatype(get_variable_value(value_2)):
+                result = "WIN"
+            else:
+                result = "FAIL"
+
+            print(f"Result from BOTH SAEM: {result}")            
+
+            # skip properly
+            lexeme_skip_counter = 3
+            
+        #  ============= CASE OF: DIFFRINT ============= 
+        if identifier == "DIFFRINT":
+            '''
+            Theoreticals:
+
+            Working:
+            DIFFRINT <x> AN <y>
+
+            to implement soon:
+            DIFFRINT <x> AN SMALLR OF <x> AN <y> BTW x > y
+            DIFFRINT <x> AN BIGGR OF <x> AN <y> BTW x < y
+            '''
+            
+            
+            # collect the strings
+            value_1 = lexemesList[current_lexeme_index+1]
+            value_2 = lexemesList[current_lexeme_index+3]
+            result = ""
+
+            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) == get_datatype(get_variable_value(value_2)):
+                result = "FAIL"
+            else:
+                result = "WIN"
+
+            print(f"Result from DIFFRINT: {result}")            
+
+            # skip properly
+            lexeme_skip_counter = 3
 
 
     return variables_list
