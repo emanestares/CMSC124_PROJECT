@@ -852,7 +852,7 @@ def symbolTableAnalyzer(lexemesList):
             Working:
             BOTH SAEM <x> AN <y>
 
-            to implement:
+            to implement soon:
             BOTH SAEM <x> AN BIGGR OF <x> AN <y> BTW x >= y
             BOTH SAEM <x> AN SMALLR OF <x> AN <y> BTW x <= y
             '''
@@ -880,7 +880,7 @@ def symbolTableAnalyzer(lexemesList):
             Working:
             DIFFRINT <x> AN <y>
 
-            to implement:
+            to implement soon:
             DIFFRINT <x> AN SMALLR OF <x> AN <y> BTW x > y
             DIFFRINT <x> AN BIGGR OF <x> AN <y> BTW x < y
             '''
