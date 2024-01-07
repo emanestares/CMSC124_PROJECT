@@ -766,7 +766,6 @@ def execute():
         if token == "BTW": 
             btwFlag = True
             current_newline_count += 1
-
         # if BTW keyterm
         elif btwFlag == True:
             if token == "\n":       
@@ -777,7 +776,6 @@ def execute():
                 existingLexemesList.append([token, "Comment"])
                 existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
-
         # if OBTW is encounted, ignore tokens until TLDR has been reached
         if token == "OBTW": obtwFlag = True
         elif obtwFlag == True:
@@ -788,7 +786,6 @@ def execute():
                 existingLexemesList.append([token, "Comment"])          
                 existingLexemesDict_newline_reference.append(current_newline_count)         
                 continue
-
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
             if re.search("[0-9]\.[0-9]", token) != None and token[0] == "\"" and token[-1] == "\"":
@@ -806,12 +803,10 @@ def execute():
                 existingLexemesList.append([token, "Integer Literal"])
                 existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
-
             # if token is "", add a space then continue iterating
             if token == "":
                 stringTemp += " "
                 continue            
-
             # if the first character of the token is '\"', then it is part of a string literal 
             if token[0] == "\"" and not stringFlag:
                 existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
@@ -820,29 +815,35 @@ def execute():
                 stringTemp += token     # append the token
                 stringTemp += " "       # add a space
                 stringFlag = True       # next token will be part of the string
+                
+                if token[-1] == "\"":
+                    existingLexemesDict[f"{token[1:-1]}"] = "String Literal"   # mark it as a string literal
+                    existingLexemesList.append([f"{token[1:-1]}", "String Literal"])
+                    existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
+                    existingLexemesList.append(["\"", "String Delimeter"])
+                    stringFlag = False
+                    stringTemp = ""
+
             # if the previous token is an unpaired '\"'
-            if stringFlag == True:
+            elif stringFlag == True:
                 # if the last part of the token is '\"', then it closes the string literal
-                if token[0] == "\"":
-                    print(stringTemp)
+                if token[-1] == "\"":
                     stringTemp += token # append the token
                     stringTemp += " "   # add a space
                     stringTemp = re.search(r'[^"]*"([^"]*)"[^"]*', stringTemp).group(1)   # clean the 
-
                     existingLexemesDict[f"{stringTemp}"] = "String Literal"   # mark it as a string literal
                     existingLexemesList.append([f"{stringTemp}", "String Literal"])
-
                     existingLexemesDict["\""] = "String Delimeter"   # mark it as a string literal
                     existingLexemesList.append(["\"", "String Delimeter"])
                     
                     existingLexemesDict_newline_reference.append(current_newline_count)
-
                     stringFlag = False  # next token is no longer part of the string
                     stringTemp = ""     # reset
                 # the string is still unclosed, add it to stringTemp
                 else:
                     stringTemp += token # append the token
                     # print(stringTemp)
+
             # not a string literal
             else:
                 # update the stack variable for string
@@ -851,7 +852,6 @@ def execute():
                 # check if item is in the iterator
                 if token in current_iterator:
                     key_value = current_iterator[token] # acquire the next value from iterator
-
                     # if there's no more afterwards
                     if key_value == "done":
                         existingLexemesDict[stack_string_variable] = la.allKeywords[stack_string_variable]  # update using the stack_string_variable
@@ -874,7 +874,6 @@ def execute():
             existingLexemesDict[token] = la.allKeywords[token]
             existingLexemesList.append([token, la.allKeywords[token]])
             existingLexemesDict_newline_reference.append(current_newline_count)
-
     # reset the lexemesList
     lexemesList = [["Lexemes", "Classification"]]
 

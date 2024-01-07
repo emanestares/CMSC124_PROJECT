@@ -37,7 +37,7 @@ HAI
     var10 IS NOW A NUMBAR
     var100 IS NOW A TROOF
     var100 IS NOW A NUMBAR
-    SMOOSH "hey you" AN "BIACH" AN "Go bammmm"
+    SMOOSH "hey you" AN "NANANA" AN "Go bammmm"
     HOW IZ I MAINUMBA YR one YR two
         I HAS A var BTW this is a comment  
         FOUND YR var2
