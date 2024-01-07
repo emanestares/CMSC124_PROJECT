@@ -582,26 +582,32 @@ def symbolTableAnalyzer(lexemesList):
                 print("Syntactical error was found.")
 
         # CASE OF: R
+        
+        if rFlag:
+            if identifier in identifier in ["WIN", "FAIL"] or each_item[1] in ["Integer Literal", "Float Literal"]:
+                variableValues[currentVariable] = identifier
+                rFlag = False
+
         if identifier == "R":
             print("==================================================")
             currentVariable = lexemesList[current_lexeme_index-1][0]
             rFlag = True
-            # value = get_numerical_value_from_string(lexemesList[current_lexeme_index+1][0])
+            value = get_numerical_value_from_string(lexemesList[current_lexeme_index+1][0])
 
-            # # find the value and update value
-            # index = -1
-            # for each_item in variables_list:
-            #     index += 1
-            #     if each_item[0] == lexemesList[current_lexeme_index-1][0]:
+            # find the value and update value
+            index = -1
+            for each_item in variables_list:
+                index += 1
+                if each_item[0] == lexemesList[current_lexeme_index-1][0]:
 
-            #         # update if string
-            #         if lexemesList[current_lexeme_index+2][1] == "String Literal":
-            #             each_item[1] = f"{lexemesList[current_lexeme_index+1][0]}{lexemesList[current_lexeme_index+2][0]}{lexemesList[current_lexeme_index+3][0]}"
-                    
-            #         # update if number or float
-            #         else:
-            #             # update if found
-            #             each_item[1] = lexemesList[current_lexeme_index+1][0]
+                    # update if string
+                    if lexemesList[current_lexeme_index+2][1] == "String Literal":
+                        each_item[1] = f"{lexemesList[current_lexeme_index+1][0]}{lexemesList[current_lexeme_index+2][0]}{lexemesList[current_lexeme_index+3][0]}"
+                  
+                    # update if number or float
+                    else:
+                        # update if found
+                        each_item[1] = lexemesList[current_lexeme_index+1][0]
 
         # CASE OF: GIMMEH          
         if identifier == "GIMMEH":
@@ -638,6 +644,10 @@ def symbolTableAnalyzer(lexemesList):
                     
                     printList += variableValues[identifier]
                 printList += " "
+
+            elif identifier in ["WIN", "FAIL"] or each_item[1] in ["Integer Literal", "Float Literal"]:
+                printList += each_item[0]
+                printList += " "
         
         if identifier == "VISIBLE":
             visibleFlag = True
@@ -663,7 +673,10 @@ def symbolTableAnalyzer(lexemesList):
 
                 if rFlag:
                     variableValues[currentVariable] = answer
-                    set_variable_value(currentVariable, answer)
+                    if answer:
+                        set_variable_value(currentVariable, "WIN")
+                    else:
+                        set_variable_value(currentVariable, "FAIL")
                     rFlag = False
                 else:
                     variableValues["it"] = answer
@@ -683,6 +696,7 @@ def symbolTableAnalyzer(lexemesList):
                 operandList.append(False)
         
         if identifier in la.boolean_operations:
+            print("entered boolean op: " + identifier)
             booleanOp = identifier
             was_boolean = True
             opFlag = True
@@ -690,6 +704,7 @@ def symbolTableAnalyzer(lexemesList):
         elif was_boolean:
             if anFlag:
                 print(identifier)
+                print(variableValues)
                 if variableValues[identifier] == "WIN":
                     value_2 = True
                 else:
@@ -739,6 +754,9 @@ def symbolTableAnalyzer(lexemesList):
                 variableValues["it"] = "WIN"
             
             negateFlag = False
+
+        # ============= CASE OF: CONDITIONAL STATEMENTS ============= 
+            
 
         # ============= CASE OF: ARITHMETIC OPERATIONS ============= 
         if identifier in la.arithmetic_operations:
@@ -840,42 +858,6 @@ def symbolTableAnalyzer(lexemesList):
 
             # skip properly
             lexeme_skip_counter = i
-            
-        #  ============= CASE OF: BOTH SAEM ============= 
-        if identifier == "BOTH SAEM":
-            
-            # collect the strings
-            value_1 = lexemesList[current_lexeme_index+1]
-            value_2 = lexemesList[current_lexeme_index+3]
-            result = ""
-
-            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) == get_datatype(get_variable_value(value_2)):
-                result = "WIN"
-            else:
-                result = "FAIL"
-
-            print(f"Result from BOTH SAEM: {result}")            
-
-            # skip properly
-            lexeme_skip_counter = 3
-            
-        #  ============= CASE OF: DIFFRINT ============= 
-        if identifier == "DIFFRINT":
-            
-            # collect the strings
-            value_1 = lexemesList[current_lexeme_index+1]
-            value_2 = lexemesList[current_lexeme_index+3]
-            result = ""
-
-            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) == get_datatype(get_variable_value(value_2)):
-                result = "FAIL"
-            else:
-                result = "WIN"
-
-            print(f"Result from DIFFRINT: {result}")            
-
-            # skip properly
-            lexeme_skip_counter = 3
 
 
     return variables_list
@@ -917,13 +899,7 @@ def execute():
     # iterate through each token in the tempList
     current_newline_count = 1
     print(tempList)
-    current_token_index = -1
-    skip_once = False
     for token in tempList:
-        if skip_once:
-            skip_once = False
-            continue
-        current_token_index += 1
         # if BTW is encountered, ignore tokens until the end of the line
         if token == "BTW": 
             btwFlag = True
@@ -1016,41 +992,27 @@ def execute():
                 else:
                     stringTemp += token # append the token
                     # print(stringTemp)
-
             # not a string literal
             else:
                 # update the stack variable for string
                 stack_string_variable = stack_string_variable + f"{token}" if stack_string_variable == "" else stack_string_variable + f" {token}" 
                 
-                print(f"Current stack_string_variable: {stack_string_variable}")
                 # check if item is in the iterator
                 if token in current_iterator:
                     key_value = current_iterator[token] # acquire the next value from iterator
-                    print(f"Next item is {key_value}")
+
                     # if there's no more afterwards
                     if key_value == "done":
-                        print(f"Ending keyterm is '{stack_string_variable}'\n")
                         existingLexemesDict[stack_string_variable] = la.allKeywords[stack_string_variable]  # update using the stack_string_variable
                         existingLexemesList.append([stack_string_variable, la.allKeywords[stack_string_variable]])
                         existingLexemesDict_newline_reference.append(current_newline_count)
                         current_iterator = la.iterator                                                      # also update the current_iterator back
-                        stack_string_variable = "" # clear the current string
-
+                        stack_string_variable = ""                                                          # clear the current string
                     # if there's more afterwards
                     else: 
-                        
-                        # check if this is BOTH SAEM
-                        if key_value == {'OF': 'done'} and token == "BOTH":
-                            if (tempList[current_token_index+1] == "SAEM"):
-                                existingLexemesDict["BOTH SAEM"] = "Equal Operator"  # treat as variable identifier
-                                existingLexemesList.append(["BOTH SAEM", "Equal Operator"])
-                                skip_once = True
-                                continue
-
                         current_iterator = key_value # update the current iterator to the next dictionary
                 # if it is not in the iterator
                 else:
-                    print(f"Fuck, not in the iterator?")
                     stack_string_variable = ""                          # reset
                     existingLexemesDict[token] = "Variable Identifier"  # treat as variable identifier
                     existingLexemesList.append([token, "Variable Identifier"])
@@ -1058,29 +1020,16 @@ def execute():
         # if token is in the lexemes dictionary
         else:
             stack_string_variable = "" 
-            print(f"Same found on keyterm {token}")
             existingLexemesDict[token] = la.allKeywords[token]
             existingLexemesList.append([token, la.allKeywords[token]])
             existingLexemesDict_newline_reference.append(current_newline_count)
-
-    print(f"Current existing lexemes list:")
-    print(existingLexemesList)
-
-    # remove the additional "BOTH" if that exists
-    print(f"Iterating through existingLexemesDict")
-    for each_item in existingLexemesList:
-        print(f"Each_item: '{each_item}'")
-        if each_item[0] == "BOTH":
-            existingLexemesList.remove(each_item)
 
     # reset the lexemesList
     lexemesList = [["Lexemes", "Classification"]]
 
     # append all tokens and their classifications to the lexemesList
     # for token in existingLexemesDict: lexemesList.append([token, existingLexemesDict[token]])
-    for token in existingLexemesList: 
-        print(f"Current token: {token}")
-        lexemesList.append([token[0], existingLexemesDict[token[0]]])
+    for token in existingLexemesList: lexemesList.append([token[0], existingLexemesDict[token[0]]])
     
     print(lexemesList)
 
@@ -1191,7 +1140,7 @@ def draw():
     selectFileButton = tk.CTkButton(fileExpFrame, text = "SELECT FILE", command=lambda: chooseFile(fileDirLabel, textEditor, lexemesFrame, symbolTableFrame))
     selectFileButton.grid(row = 0, column = 1, padx = 5, pady = 5, sticky = "e")
 
-    textEditor = tk.CTkTextbox(fileExpFrame, width = 280, height=265)
+    textEditor = tk.CTkTextbox(fileExpFrame, width = 600, height=265)
     textEditor.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
 
     #--- List of tokens ---#
@@ -1212,7 +1161,7 @@ def draw():
     executeButton = tk.CTkButton(terminalFrame, text = "EXECUTE", command = execute)
     executeButton.pack(expand=True, fill="both", padx=5, pady=5)
 
-    terminal = tk.CTkTextbox(terminalFrame, width = 950, height=265, state = "disabled")
+    terminal = tk.CTkTextbox(terminalFrame, width = 1270, height=265, state = "disabled")
     terminal.pack(expand=True, fill="both", padx=5, pady=5)
 
     root.mainloop()
