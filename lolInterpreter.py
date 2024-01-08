@@ -493,6 +493,8 @@ def perform_arithmetic_operation(operation, value_1, value_2):
     else:
         pass      
 
+
+# TODO: cleanup prints
 # function that executes syntax analysis given lexemes list.
 def symbolTableAnalyzer(lexemesList):
     '''Function that executes syntax analysis given the list of lexemes.
@@ -536,12 +538,12 @@ def symbolTableAnalyzer(lexemesList):
 
         # skip until lexeme skip counter is not 0
         if lexeme_skip_counter != 0:
-            print(f"Skipping '{identifier}'")
+            # print(f"Skipping '{identifier}'")
             lexeme_skip_counter -= 1
             continue
 
         # just print out cuz why not
-        print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
+        # print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
     
         # skip HAI and BYE
         if identifier in ["HAI", "KTHXBYE"]: continue
@@ -570,10 +572,10 @@ def symbolTableAnalyzer(lexemesList):
                         variableValues[lexemesList[current_lexeme_index+1][0]] = f"\"{lexemesList[current_lexeme_index+3][0]}{lexemesList[current_lexeme_index+4][0]}{lexemesList[current_lexeme_index+5][0]}\""
                     # add properly if number or uninitialized
                     else:
-                        print(variables_list)
+                        # print(variables_list)
                         variables_list.append([lexemesList[current_lexeme_index+1][0], f"{get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}"])
                         variableValues[lexemesList[current_lexeme_index+1][0]] = f"{get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}"
-                        print(f"Placed {get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}")
+                        # print(f"Placed {get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}")
                 # should skip 3 more items after this iteration
                 lexeme_skip_counter = 3
 
@@ -583,7 +585,7 @@ def symbolTableAnalyzer(lexemesList):
 
         # CASE OF: R
         if identifier == "R":
-            print("==================================================")
+            # print("==================================================")
             currentVariable = lexemesList[current_lexeme_index-1][0]
             rFlag = True
             # value = get_numerical_value_from_string(lexemesList[current_lexeme_index+1][0])
@@ -609,10 +611,10 @@ def symbolTableAnalyzer(lexemesList):
         
         # CASE OF: VISIBLE
         if visibleFlag:
-            print(printList)
+            # print(printList)
             if each_item[0] == "\n":
                 if opFlag:
-                    print(variableValues)
+                    # print(variableValues)
                     printList += variableValues["it"]
                     printList += " "
                     opFlag = False
@@ -689,7 +691,7 @@ def symbolTableAnalyzer(lexemesList):
         
         elif was_boolean:
             if anFlag:
-                print(identifier)
+                # print(identifier)
                 if variableValues[identifier] == "WIN":
                     value_2 = True
                 else:
@@ -764,15 +766,15 @@ def symbolTableAnalyzer(lexemesList):
                     i = i+2
 
                 # compute the value
-                    print("\nStarting arithmetic operations\n")
+                    # print("\nStarting arithmetic operations\n")
                 for each_operation in reversed(arithmetic_operations): 
-                    print(f"On queue for operation {each_operation}:")
+                    # print(f"On queue for operation {each_operation}:")
                     value_1 = arithmetic_values_container.pop(0)
-                    print(f"accumulator[0]: {value_1}")
+                    # print(f"accumulator[0]: {value_1}")
                     value_2 = arithmetic_values_container.pop(0)
-                    print(f"accumulator[1]: {value_2}\n")
+                    # print(f"accumulator[1]: {value_2}\n")
                     arithmetic_values_container.insert(0, perform_arithmetic_operation(each_operation, value_1, value_2))
-                print(f"Final value: {arithmetic_values_container[0]}\n")
+                # print(f"Final value: {arithmetic_values_container[0]}\n")
 
                 # skip the number of times according sa i
                 lexeme_skip_counter = i-2
@@ -796,7 +798,7 @@ def symbolTableAnalyzer(lexemesList):
                 lexeme_skip_counter = 3
                 
                 # if (result != ERROR):
-                print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} A {lexemesList[current_lexeme_index+3][0]}: {result}")
+                # print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} A {lexemesList[current_lexeme_index+3][0]}: {result}")
 
             # if in case YARN
             else:
@@ -806,7 +808,7 @@ def symbolTableAnalyzer(lexemesList):
                 lexeme_skip_counter = 2
                 
                 # if (result != ERROR):
-                print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} {lexemesList[current_lexeme_index+2][0]}: {result}")
+                # print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} {lexemesList[current_lexeme_index+2][0]}: {result}")
 
 
         #  ============= CASE OF: IS NOW A ============= 
@@ -815,7 +817,7 @@ def symbolTableAnalyzer(lexemesList):
             # is_now_a takes in variable name and target datatype
             result = is_now_a(lexemesList[current_lexeme_index-1][0], lexemesList[current_lexeme_index+1][0])
             lexeme_skip_counter = 1
-            print(f"IS_NOW_A successfully implemented.")
+            # print(f"IS_NOW_A successfully implemented.")
             
         #  ============= CASE OF: SMOOSH ============= 
         if identifier == "SMOOSH":
@@ -836,7 +838,7 @@ def symbolTableAnalyzer(lexemesList):
                     break
             
             # result is now complete
-            print(f"Result for SMOOSH: {result}")
+            # print(f"Result for SMOOSH: {result}")
 
             # skip properly
             lexeme_skip_counter = i
@@ -864,11 +866,18 @@ def execute():
     terminal.delete('1.0', tk.END)
     terminal.configure(state = "disabled")
 
+    print("[!] execute ------------------------------------------ [!]")    
+
     for line in editorContent:
         if tempList != []:
             tempList += "\n"
 
-        tempList += line.strip().split(" ")    # split on spaces then add each to the tempList
+        # replace tabs with a single space
+        noTabs = line.replace("\t", " ")
+        
+        # split on spaces then add each to the tempList
+        tempList += noTabs.strip().split(" ")
+
 
     # variable that stores the current string for strings with two or more values
     # this will be empty if placed in dictionary, else not empty
@@ -880,43 +889,50 @@ def execute():
     
     # iterate through each token in the tempList
     current_newline_count = 1
-    print(tempList)
+
     for token in tempList:
+
         # if BTW is encountered, ignore tokens until the end of the line
-        if token == "BTW": 
+        if token == "BTW":
             btwFlag = True
             current_newline_count += 1
 
         # if BTW keyterm
         elif btwFlag == True:
-            if token == "\n":       
+            if token == "\n":
                 btwFlag = False
                 current_newline_count += 1
             else:
-                existingLexemesDict[token] = "Comment"
-                existingLexemesList.append([token, "Comment"])
-                existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
+            # else:
+            #     existingLexemesDict[token] = "Comment"
+            #     existingLexemesList.append([token, "Comment"])
+            #     existingLexemesDict_newline_reference.append(current_newline_count)
+            #     continue
 
         # if OBTW is encounted, ignore tokens until TLDR has been reached
-        if token == "OBTW": obtwFlag = True
+        if token == "OBTW": 
+            obtwFlag = True
+        
         elif obtwFlag == True:
             if token == "TLDR":     
                 obtwFlag = False
             else:
-                existingLexemesDict[token] = "Comment"
-                existingLexemesList.append([token, "Comment"])          
-                existingLexemesDict_newline_reference.append(current_newline_count)         
                 continue
+            # else:
+            #     existingLexemesDict[token] = "Comment"
+            #     existingLexemesList.append([token, "Comment"])          
+            #     existingLexemesDict_newline_reference.append(current_newline_count)         
+            #     continue
 
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
-            if re.search("[0-9]\.[0-9]", token) != None and token[0] == "\"" and token[-1] == "\"":
+            if re.search("[0-9]\\.[0-9]", token) != None and token[0] == "\"" and token[-1] == "\"":
                 existingLexemesDict[token] = "Stringed Number Literal"
                 existingLexemesList.append([token, "Stringed Number Literal"])
                 existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
-            if re.search("[0-9]\.[0-9]", token) != None:
+            if re.search("[0-9]\\.[0-9]", token) != None:
                 existingLexemesDict[token] = "Float Literal"
                 existingLexemesList.append([token, "Float Literal"])
                 existingLexemesDict_newline_reference.append(current_newline_count)
@@ -954,8 +970,6 @@ def execute():
 
                 # if the last part of the token is '\"', then it closes the string literal
                 if token[-1] == "\"":
-
-                    print(stringTemp)
                     stringTemp += token # append the token
                     stringTemp += " "   # add a space
                     stringTemp = re.search(r'[^"]*"([^"]*)"[^"]*', stringTemp).group(1)   # clean the 
@@ -1011,9 +1025,9 @@ def execute():
 
     # append all tokens and their classifications to the lexemesList
     # for token in existingLexemesDict: lexemesList.append([token, existingLexemesDict[token]])
-    for token in existingLexemesList: lexemesList.append([token[0], existingLexemesDict[token[0]]])
-    
-    print(lexemesList)
+    for token in existingLexemesList: 
+        # print(token)
+        lexemesList.append([token[0], token[1]])
 
     for widget in lexemesFrame.winfo_children(): widget.destroy()
 
@@ -1025,8 +1039,8 @@ def execute():
     lexemesTable = CTkTable(lexemesFrame, row = len(filtered_lexeme_list), column = 2, values = filtered_lexeme_list)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
 
+
     # TODO: for testing; should be removed
-    print("\n\n#--------------------------- [!] DO TRAVERSAL [!] --------------------------- #")
     new_parser = parser.Parser(lexemesList[1:])
     new_parser.traverse_tokens()
 
