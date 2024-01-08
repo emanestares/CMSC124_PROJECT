@@ -165,7 +165,6 @@ def syntaxAnalysis(lexemesList):
 
         # checks for a variable name after I HAS A, this is illegal now!
         if i[0] == "I HAS A":
-            print("==============================OAIDFJOASJDASIJASDOIJD======================")
             syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count+1]}]: Cannot instantiate variable outside of declarations clause.\n")
             
         
@@ -230,6 +229,11 @@ def gimmeh(variable):
     terminal.configure(state = "normal")
     terminal.insert(tk.END, "\n ")
 
+    input()
+    variableValues[variable] = terminal.get("end-1c linestart", tk.END).strip()
+    set_variable_value(variable, terminal.get("end-1c linestart", tk.END).strip())
+
+    terminal.insert(tk.END, "\n ")
     terminal.configure(state = "disabled")
 
 # helper function that returns the value of a specific variable
@@ -529,17 +533,21 @@ def symbolTableAnalyzer(_lexemesList):
     # variables
     lexeme_skip_counter = 0
     current_lexeme_index = -1
+    indexJump = 0
     loopDict = {}
+    functionDict = {}
     arithmetic_operations = []
     arithmetic_operations_counter = []
     arithmetic_values_container = []
     operandList = []
     identifierPerLine = []
+    paramList = []
     printList = ""
     booleanOp = ""
     loopOp = ""
     answer = ""
     currentVariable = ""
+    currentFunction = ""
     stringFlag = False
     was_arithmetic = False
     was_boolean = False
@@ -560,7 +568,8 @@ def symbolTableAnalyzer(_lexemesList):
     loopLineFlag = False
     loopOpFlag = False
     loopChecker = False
-
+    functionDeclarationFlag = False
+    functionCallFlag = False
 
     # do for every lexeme
     while current_lexeme_index < len(lexemesList)-1:
@@ -582,6 +591,36 @@ def symbolTableAnalyzer(_lexemesList):
     
         # skip HAI and BYE
         if identifier in ["HAI", "KTHXBYE"]: continue
+
+        # ============= CASE OF: FUNCTION STATEMENTS =============
+
+        # # function call
+        # if identifier == "I IZ":
+        #     functionCallFlag = True
+        #     currentFunction = lexemesList[current_lexeme_index+1][0]
+
+        # if functionCallFlag:
+        #     if identifier == "\n":
+        #         indexJump = current_lexeme_index + 1
+
+        # # function declaration
+        # if identifier == "HOW IZ I":
+        #     functionDeclarationFlag = True
+        #     current_lexeme_index += 1
+        #     functionDict[lexemesList[current_lexeme_index][0]] = []
+        
+        # elif functionDeclarationFlag:
+        #     if identifier == "\n":
+        #         functionDict[each_item[0]].append(current_lexeme_index+1)
+        #         functionDict[each_item[0]].append(paramList)
+        #         paramList = []
+
+        #     if identifier == "YR":
+        #         current_lexeme_index += 1
+        #         paramList.append(each_item[0])
+
+        #     if identifier == "MKAY":
+        #         current_lexeme_index = indexJump
 
         # ============= CASE OF: LOOP STATEMENTS =============
 
@@ -770,7 +809,6 @@ def symbolTableAnalyzer(_lexemesList):
                 rFlag = False
 
         if identifier == "R":
-            print("==================================================")
             currentVariable = lexemesList[current_lexeme_index-1][0]
             rFlag = True
             value = get_numerical_value_from_string(lexemesList[current_lexeme_index+1][0])

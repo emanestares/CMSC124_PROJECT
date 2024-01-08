@@ -61,6 +61,8 @@ allKeywords = {
     "WAZZUP": "Start of Variables Declaration", 
     "BUHBYE": "End of Variables Declaration", 
     "MKAY" : "Infinite Arity End",
+    "YR" : "Parameter Delimeter",
+    "I IZ": "Function Call",
     "\n": "Line Break"
 }
 
@@ -102,7 +104,8 @@ iterator = {
     "I": {
         "HAS": {
             "A": "done"
-        }
+        },
+        "IZ": "done"
     },
     "QUOSHUNT": {
         "OF": "done"
