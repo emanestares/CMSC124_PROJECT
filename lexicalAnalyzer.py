@@ -104,7 +104,8 @@ iterator = {
         "OF": "done"
     },
     "BOTH": {
-        "SAEM": "done"
+        "SAEM": "done",
+        "OF": "done"
     },
     "IS": {
         "NOW": {
@@ -168,9 +169,6 @@ iterator = {
         "OF": "done"
     },
     "EITHER": {
-        "OF": "done"
-    },
-    "BOTH": {
         "OF": "done"
     }
 }

@@ -3,10 +3,9 @@ HAI
         I HAS A x ITZ 10
         I HAS A y ITZ 14
     BUHBYE
-
-    BTW x==y
+    BOTH OF x AN y
     BOTH SAEM x AN y
-    BTW x!=y
+    BOTH OF x AN y
     DIFFRINT x AN y
 
 KTHXBYE

@@ -557,7 +557,7 @@ def symbolTableAnalyzer(lexemesList):
         # ============= CASE OF: SWITCH-CASE STATEMENTS =============
 
         # check for a line with only one identifier
-        if identifier == "\n":
+        if identifier == "\n" and oRlyFlag == True:
             if len(identifierPerLine) == 1:
                 # if a line has only one identifier, IT = value of identifier
                 if identifierPerLine[0][1] == "Variable Identifier":
@@ -1153,7 +1153,9 @@ def execute():
                 stack_string_variable = stack_string_variable + f"{token}" if stack_string_variable == "" else stack_string_variable + f" {token}" 
                 
                 # check if item is in the iterator
+                print(f"Current token is {token} and is {'found' if token in current_iterator else 'not found'} in current_iterator {current_iterator}.")
                 if token in current_iterator:
+
                     key_value = current_iterator[token] # acquire the next value from iterator
 
                     # if there's no more afterwards
