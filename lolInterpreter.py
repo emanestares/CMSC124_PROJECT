@@ -1033,15 +1033,25 @@ def symbolTableAnalyzer(_lexemesList):
                     i += 4
                 elif (lexemesList[current_lexeme_index+i+1][0] == "AN"):
                     value = lexemesList[current_lexeme_index+i][0]
-                    if value in variable_names:
+                    print(f"Value is {value}, variables list apparently {variables_list}")
+                    is_variable = False
+                    for variable in variables_list:
+                        if variable[0] == value: is_variable = True
+                    if is_variable:
                         result += f"{get_variable_value(value)}"
+                        print(f"RESULT: VALUE OF {value} is {get_variable_value(value)}")
                     else:
                         result += value
                     i += 2
                 else:
                     value = lexemesList[current_lexeme_index+i][0]
-                    if value in variable_names:
+                    print(f"Value is {value}, variables list apparently {variables_list}")
+                    is_variable = False
+                    for variable in variables_list:
+                        if variable[0] == value: is_variable = True
+                    if is_variable:
                         result += f"{get_variable_value(value)}"
+                        print(f"RESULT: VALUE OF {value} is {get_variable_value(value)}")
                     else:
                         result += value
                     break
