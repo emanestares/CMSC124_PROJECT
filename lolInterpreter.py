@@ -493,13 +493,20 @@ def perform_arithmetic_operation(operation, value_1, value_2):
     else:
         pass      
 
+# global variable na for accessibility
+lexemesList = []
+current_lexeme_index = 0
+
 # function that executes syntax analysis given lexemes list.
-def symbolTableAnalyzer(lexemesList):
+def symbolTableAnalyzer(_lexemesList):
     '''Function that executes syntax analysis given the list of lexemes.
     This function returns a list of identifiers and their values.'''
 
     # access the global variable
-    global variables_list
+    global variables_list, lexemesList, current_lexeme_index
+
+    # place lexemesList to global variable cuz why not
+    lexemesList = _lexemesList
 
     # reset variables list
     variables_list = [["Identifier", "Value"]]
@@ -981,6 +988,8 @@ def symbolTableAnalyzer(lexemesList):
                 # if invalid placement
                 if keyword_index != 3 or lexemesList[current_lexeme_index+1][0] != lexemesList[current_lexeme_index+4][0]:
                     print("Error: Invalid syntax found.")
+                    if (lexemesList[current_lexeme_index-1][0] == "VISIBLE"):
+                        visible(f"Error: Improper syntax found: {lexemesList[current_lexeme_index][0]} {lexemesList[current_lexeme_index+1][0]} {lexemesList[current_lexeme_index+2][0]} {lexemesList[current_lexeme_index+3][0]} {lexemesList[current_lexeme_index+4][0]} {lexemesList[current_lexeme_index+5][0]} {lexemesList[current_lexeme_index+6][0]}.\n")
                 
                 else:
                     print("Proper placement, trying...")
@@ -1003,6 +1012,11 @@ def symbolTableAnalyzer(lexemesList):
                         else:
                             result = "FAIL"
                         print(f"Result from BOTH SAEM (with SMALLR OF): {result}")            
+                    
+                    # print result to terminal
+                    if (lexemesList[current_lexeme_index-1][0] == "VISIBLE"):
+                        visible(f"{result}\n")
+
 
                 # skip properly
                 lexeme_skip_counter = 6
@@ -1021,21 +1035,17 @@ def symbolTableAnalyzer(lexemesList):
 
             print(f"Result from BOTH SAEM: {result}")            
 
+            # print result to terminal
+            if (lexemesList[current_lexeme_index-1][0] == "VISIBLE"):
+                visible(f"{result}\n")
+                    
             # skip properly
             lexeme_skip_counter = 3
             
+
+
         #  ============= CASE OF: DIFFRINT ============= 
         if identifier == "DIFFRINT":
-            '''
-            Theoreticals:
-
-            Working:
-            DIFFRINT <x> AN <y>
-
-            to implement soon:
-            DIFFRINT <x> AN SMALLR OF <x> AN <y> BTW x > y
-            DIFFRINT <x> AN BIGGR OF <x> AN <y> BTW x < y
-            '''
             
             # check if there are BIGGR OF or SMALLR OF keywords
             has_relational_keyword = False
@@ -1056,7 +1066,9 @@ def symbolTableAnalyzer(lexemesList):
                 # if invalid placement
                 if keyword_index != 3 or lexemesList[current_lexeme_index+1][0] != lexemesList[current_lexeme_index+4][0]:
                     print("Error: Invalid syntax found.")
-                    
+                    if (lexemesList[current_lexeme_index-1][0] == "VISIBLE"):
+                        visible(f"Error: Improper syntax found: {lexemesList[current_lexeme_index][0]} {lexemesList[current_lexeme_index+1][0]} {lexemesList[current_lexeme_index+2][0]} {lexemesList[current_lexeme_index+3][0]} {lexemesList[current_lexeme_index+4][0]} {lexemesList[current_lexeme_index+5][0]} {lexemesList[current_lexeme_index+6][0]}.\n")
+                
                 else:
                     print("Proper placement, trying...")
                     
@@ -1079,6 +1091,10 @@ def symbolTableAnalyzer(lexemesList):
                             result = "FAIL"
                         print(f"Result from DIFFRINT (with SMALLR OF): {result}")            
 
+                    # print result to terminal
+                    if (lexemesList[current_lexeme_index-1][0] == "VISIBLE"):
+                        visible(f"{result}\n")
+                    
                 # skip properly
                 lexeme_skip_counter = 6
                 continue
@@ -1095,6 +1111,10 @@ def symbolTableAnalyzer(lexemesList):
 
             print(f"Result from DIFFRINT: {result}")            
 
+            # print result to terminal
+            if (lexemesList[current_lexeme_index-1][0] == "VISIBLE"):
+                visible(f"{result}\n")
+                    
             # skip properly
             lexeme_skip_counter = 3
 
@@ -1155,14 +1175,17 @@ def execute():
                 continue
 
         # if OBTW is encounted, ignore tokens until TLDR has been reached
-        if token == "OBTW": obtwFlag = True
+        if token == "OBTW": 
+            obtwFlag = True
         elif obtwFlag == True:
+            print(f"OBTW flag is on, on current item '{token}'.")
             if token == "TLDR":     
                 obtwFlag = False
             else:
-                existingLexemesDict[token] = "Comment"
-                existingLexemesList.append([token, "Comment"])          
-                existingLexemesDict_newline_reference.append(current_newline_count)         
+                # existingLexemesDict[token] = "Comment"
+                # existingLexemesList.append([token, "Comment"])          
+                # existingLexemesDict_newline_reference.append(current_newline_count)         
+                # print(f"Current existing Lexemes: {existing}")
                 continue
 
         # if token not in keywords
