@@ -45,6 +45,10 @@ SKIPPING_KEYWORDS = [
 # variable that stores how many new lines have passed since the lexemes dictionary
 existingLexemesDict_newline_reference = []
 
+# Smooshes all the way. Until it detects no more "AN".
+def smoosh(original, other):
+    return f"{original}{other}"
+
 # displays the error inside the terminal
 def displayOnTerminal(errorMessage):
     '''Function that displays a particular string at the terminal part of the GUI.'''
@@ -136,6 +140,7 @@ def syntaxAnalysis(lexemesList):
                     print(f"lexemesList[{count+1+1}][{0}] = {lexemesList[count+1+1][0]}")
                     if lexemesList[count+2+1][0] in la.allKeywords.keys() or lexemesList[count+2+1][0] in la.arithmetic_operations:
                        syntax_error_list.insert(0, f"Syntax Error [line {existingLexemesDict_newline_reference[count+1]}]: Expecting variable name.\n")
+                       print("ERROR ON VARIABLE")
                        continue
                     
                     # if proper, add to variable names
@@ -143,6 +148,7 @@ def syntaxAnalysis(lexemesList):
                         syntax_error_list.insert(0, f"Syntax Correct [line {existingLexemesDict_newline_reference[count+1]}]. Added '{lexemesList[count+3][0]}' variable.\n")
                         variable_names.append(lexemesList[count+3][0])
                         variableValues[lexemesList[count+3][0]] = ""
+                        print(f"Current variables: {variable_names}")
                         continue
 
 
@@ -755,7 +761,7 @@ def symbolTableAnalyzer(_lexemesList):
                         variableValues[lexemesList[current_lexeme_index+1][0]] = f"{get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}"
                         print(f"Placed {get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}")
                 # should skip 3 more items after this iteration
-                lexeme_skip_counter = 3
+                lexeme_skip_counter = 3 if (variableValues[lexemesList[current_lexeme_index+1][0]] != "<uninitialized>") else 2
 
             # if failed, listIndexError means syntactical error
             except IndexError:
@@ -830,6 +836,8 @@ def symbolTableAnalyzer(_lexemesList):
         
         if identifier == "VISIBLE":
             visibleFlag = True
+
+            # if SMOOSH is next, just skip.
 
         # ============= CASE OF: BOOLEAN OPERATIONS ============= 
         if identifier in la.boolean_operations_inf:
@@ -1017,19 +1025,31 @@ def symbolTableAnalyzer(_lexemesList):
             result = " "
 
             # append appropriately iteratively
-            i=0
+            i=1
             while(True):    
+                print(f"Current i is {i}")
                 if (lexemesList[current_lexeme_index+i+1][0] == "\""):
                     result += lexemesList[current_lexeme_index+i+2][0]
                     i += 4
-                elif (lexemesList[current_lexeme_index+i][0] == "AN"):
-                    result += lexemesList[current_lexeme_index+i+1][0]
+                elif (lexemesList[current_lexeme_index+i+1][0] == "AN"):
+                    value = lexemesList[current_lexeme_index+i][0]
+                    if value in variable_names:
+                        result += f"{get_variable_value(value)}"
+                    else:
+                        result += value
                     i += 2
                 else:
+                    value = lexemesList[current_lexeme_index+i][0]
+                    if value in variable_names:
+                        result += f"{get_variable_value(value)}"
+                    else:
+                        result += value
                     break
             
             # result is now complete
             print(f"Result for SMOOSH: {result}")
+            visible(f"{result}")
+
 
             # skip properly
             lexeme_skip_counter = i
