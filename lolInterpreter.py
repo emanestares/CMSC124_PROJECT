@@ -507,6 +507,7 @@ def symbolTableAnalyzer(lexemesList):
     # variables
     lexeme_skip_counter = 0
     current_lexeme_index = -1
+    loopDict = {}
     arithmetic_operations = []
     arithmetic_operations_counter = []
     arithmetic_values_container = []
@@ -514,6 +515,7 @@ def symbolTableAnalyzer(lexemesList):
     identifierPerLine = []
     printList = ""
     booleanOp = ""
+    loopOp = ""
     answer = ""
     currentVariable = ""
     stringFlag = False
@@ -522,7 +524,7 @@ def symbolTableAnalyzer(lexemesList):
     was_boolean_inf = False
     anFlag = False
     visibleFlag = False
-    opFlag = False
+    printOpFlag = False
     negateFlag = False
     rFlag = False
     oRlyFlag = False
@@ -532,12 +534,17 @@ def symbolTableAnalyzer(lexemesList):
     switchFlag = False
     omgFlag = False
     skipOmgFlag = False
+    loopFlag = False
+    loopLineFlag = False
+    loopOpFlag = False
+    loopChecker = False
+
 
     # do for every lexeme
-    for each_item in lexemesList:
-
-        # update iterating variable
+    while current_lexeme_index < len(lexemesList)-1:
         current_lexeme_index += 1
+
+        each_item = lexemesList[current_lexeme_index]
 
         # this is the identifier 
         identifier = each_item[0]
@@ -553,6 +560,46 @@ def symbolTableAnalyzer(lexemesList):
     
         # skip HAI and BYE
         if identifier in ["HAI", "KTHXBYE"]: continue
+
+        # ============= CASE OF: LOOP STATEMENTS =============
+
+        if identifier == "IM IN YR":
+            loopLineFlag = True
+        elif loopLineFlag:
+            if each_item[1] == "Variable Identifier" and not loopOpFlag:
+                loopDict[identifier] = ""
+                loopOpFlag = True
+            
+            if loopOpFlag:
+                loopOp = identifier
+                loopDict[list(loopDict.keys())[-1]] = [lexemesList[current_lexeme_index+1]]
+                loopOpFlag = False
+
+            if identifier == "TIL":
+                loopChecker = "FAIL"
+                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index)
+            elif identifier == "WILE":
+                loopChecker = "WIN"
+                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index)
+
+            if identifier == "\n":
+                if variableValues["it"] == loopChecker:
+                    loopFlag = True
+                else:
+                    loopFlag = False
+                    loopLineFlag = False
+
+        elif identifier == "IM OUTTA YR":
+            if loopFlag:
+                if loopOp == "UPPIN YR":
+                    variableValues[loopDict[list(loopDict.keys())[-1]][0]] = int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]) + 1
+                elif loopOp == "NERFIN YR":
+                    variableValues[loopDict[list(loopDict.keys())[-1]][0]] = int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]) - 1
+                current_lexeme_index = loopDict[list(loopDict.keys())[-1]][1]
+                loopLineFlag = True
+
+            else:
+                del loopDict[list(loopDict.keys())[-1]]
 
         # ============= CASE OF: SWITCH-CASE STATEMENTS =============
 
@@ -719,10 +766,10 @@ def symbolTableAnalyzer(lexemesList):
         # CASE OF: VISIBLE
         if visibleFlag:
             if each_item[0] == "\n":
-                if opFlag:
+                if printOpFlag:
                     printList += variableValues["it"]
                     printList += " "
-                    opFlag = False
+                    printOpFlag = False
 
                 visible(printList+"\n")
                 visibleFlag = False
@@ -741,7 +788,7 @@ def symbolTableAnalyzer(lexemesList):
 
             elif each_item[1] == "Variable Identifier":
                 
-                if each_item[0] in variableValues.keys() and not opFlag:
+                if each_item[0] in variableValues.keys() and not printOpFlag:
                     
                     printList += variableValues[identifier]
                 printList += " "
@@ -758,7 +805,7 @@ def symbolTableAnalyzer(lexemesList):
             booleanOp = identifier
             was_boolean_inf = True
             if visibleFlag:
-                opFlag = True
+                printOpFlag = True
         
         elif was_boolean_inf:
             if identifier == "\n":
@@ -800,7 +847,7 @@ def symbolTableAnalyzer(lexemesList):
             booleanOp = identifier
             was_boolean = True
             if visibleFlag:
-                opFlag = True
+                printOpFlag = True
         
         elif was_boolean:
             if anFlag:
@@ -845,7 +892,7 @@ def symbolTableAnalyzer(lexemesList):
         if identifier == "NOT":
             negateFlag = True
             if visibleFlag:
-                opFlag = True
+                printOpFlag = True
 
         elif negateFlag:
             if variableValues[identifier] == "WIN":
@@ -982,6 +1029,8 @@ def symbolTableAnalyzer(lexemesList):
             else:
                 result = "FAIL"
 
+            variableValues["it"] = result
+            print(result)
             print(f"Result from BOTH SAEM: {result}")            
 
             # skip properly
@@ -1011,6 +1060,7 @@ def symbolTableAnalyzer(lexemesList):
             else:
                 result = "WIN"
 
+            variableValues["it"] = result
             print(f"Result from DIFFRINT: {result}")            
 
             # skip properly
@@ -1071,7 +1121,7 @@ def execute():
                 existingLexemesDict[token] = "Comment"
                 existingLexemesList.append([token, "Comment"])
                 existingLexemesDict_newline_reference.append(current_newline_count)
-                continue
+            continue
 
         # if OBTW is encounted, ignore tokens until TLDR has been reached
         if token == "OBTW": obtwFlag = True
@@ -1151,7 +1201,7 @@ def execute():
             else:
                 # update the stack variable for string
                 stack_string_variable = stack_string_variable + f"{token}" if stack_string_variable == "" else stack_string_variable + f" {token}" 
-                
+
                 # check if item is in the iterator
                 if token in current_iterator:
                     key_value = current_iterator[token] # acquire the next value from iterator

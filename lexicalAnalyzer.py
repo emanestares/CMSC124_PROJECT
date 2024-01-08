@@ -20,7 +20,7 @@ allKeywords = {
     "YA RLY": "True Expression",
     "NO WAI": "False Expression",
     "OMGWTF": "Default Case Comparison",
-    "NERFIN": "Decrement By One",
+    "NERFIN YR": "Decrement By One",
     "SUM OF": "Addition Operator",
     "MOD OF": "Modulo Operator",
     "BOTH OF": "And Operator",
@@ -29,7 +29,7 @@ allKeywords = {
     "ANY OF": "Or Operator Infinite Args",
     "ALL OF": "And Operator Infinite Args",
     "MEBBE": "If-Else Optional",
-    "UPPIN": "Increment By One",
+    "UPPIN YR": "Increment By One",
     "NUMBR": "Integer Type",
     "YARN": "Stringed Number",
     "TROOF": "Boolean Type",
@@ -48,7 +48,6 @@ allKeywords = {
     "HAI": "Start of Code",
     "NOT": "Negation",
     "AN": "An Keyword",
-    "YR": "YR Loop Keyword",
     "IT": "IT Keyword",
     "R": "R Keyword",
     "A": "A Keyword",
@@ -90,6 +89,9 @@ iterator = {
     "IM": {
         "OUTTA": {
             "YR": "done"
+        },
+        "IN": {
+            "YR": "done"
         }
     },
     "I": {
@@ -103,17 +105,9 @@ iterator = {
     "SMALLR": {
         "OF": "done"
     },
-    "BOTH": {
-        "SAEM": "done"
-    },
     "IS": {
         "NOW": {
             "A": "done"
-        }
-    },
-    "IM": {
-        "IN": {
-            "YR": "done"
         }
     },
     "BIGGR": {
@@ -171,6 +165,13 @@ iterator = {
         "OF": "done"
     },
     "BOTH": {
-        "OF": "done"
+        "OF": "done",
+        "SAEM": "done"
+    },
+    "UPPIN":{
+        "YR": "done"
+    },
+    "NERFIN":{
+        "YR": "done"
     }
 }
