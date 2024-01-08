@@ -235,21 +235,6 @@ def gimmeh(variable):
 # helper function that returns the value of a specific variable
 def get_variable_value(variable):
     global variables_list
-
-    print(variables_list)
-    print(variable)
-
-    if variable in ["WIN", "FAIL"]:
-        return variable 
-
-    print(f"Variable: {variable}")
-
-    if variable.isdigit():
-        if variable.find(".") != -1:
-            return float(variable)
-        else:
-            return int(variable)
-
     for value_pair in variables_list:
         if (value_pair[0] == variable):
             return value_pair[1]
@@ -573,12 +558,12 @@ def symbolTableAnalyzer(_lexemesList):
 
         # skip until lexeme skip counter is not 0
         if lexeme_skip_counter != 0:
-            # print(f"Skipping '{identifier}'")
+            print(f"Skipping '{identifier}'")
             lexeme_skip_counter -= 1
             continue
 
         # just print out cuz why not
-        # print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
+        print(f"'{identifier}'".ljust(25) + f": {each_item[1]}")
     
         # skip HAI and BYE
         if identifier in ["HAI", "KTHXBYE"]: continue
@@ -587,16 +572,14 @@ def symbolTableAnalyzer(_lexemesList):
 
         if identifier == "IM IN YR":
             loopLineFlag = True
-            loopDict[lexemesList[current_lexeme_index+1][0]] = ""
-            loopOpFlag = True
-            current_lexeme_index += 1
-
-            print(loopDict)
         elif loopLineFlag:
-
-            if loopOpFlag and not loopFlag:
+            if each_item[1] == "Variable Identifier" and not loopOpFlag:
+                loopDict[identifier] = ""
+                loopOpFlag = True
+            
+            if loopOpFlag:
                 loopOp = identifier
-                loopDict[list(loopDict.keys())[-1]] = [lexemesList[current_lexeme_index+1][0]]
+                loopDict[list(loopDict.keys())[-1]] = [lexemesList[current_lexeme_index+1]]
                 loopOpFlag = False
 
             if identifier == "TIL":
@@ -611,25 +594,19 @@ def symbolTableAnalyzer(_lexemesList):
                     loopFlag = True
                 else:
                     loopFlag = False
-                loopLineFlag = False
+                    loopLineFlag = False
 
         elif identifier == "IM OUTTA YR":
-
             if loopFlag:
                 if loopOp == "UPPIN YR":
                     variableValues[loopDict[list(loopDict.keys())[-1]][0]] = int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]) + 1
-                    set_variable_value(loopDict[list(loopDict.keys())[-1]][0], int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]))
-                    print(variableValues)
                 elif loopOp == "NERFIN YR":
                     variableValues[loopDict[list(loopDict.keys())[-1]][0]] = int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]) - 1
-                    set_variable_value(loopDict[list(loopDict.keys())[-1]][0], int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]))
                 current_lexeme_index = loopDict[list(loopDict.keys())[-1]][1]
                 loopLineFlag = True
 
             else:
                 del loopDict[list(loopDict.keys())[-1]]
-                print(loopDict)
-
 
         # ============= CASE OF: SWITCH-CASE STATEMENTS =============
 
@@ -750,10 +727,10 @@ def symbolTableAnalyzer(_lexemesList):
                         variableValues[lexemesList[current_lexeme_index+1][0]] = f"\"{lexemesList[current_lexeme_index+3][0]}{lexemesList[current_lexeme_index+4][0]}{lexemesList[current_lexeme_index+5][0]}\""
                     # add properly if number or uninitialized
                     else:
-                        # print(variables_list)
+                        print(variables_list)
                         variables_list.append([lexemesList[current_lexeme_index+1][0], f"{get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}"])
                         variableValues[lexemesList[current_lexeme_index+1][0]] = f"{get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}"
-                        # print(f"Placed {get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}")
+                        print(f"Placed {get_numerical_value_from_string(lexemesList[current_lexeme_index+3][0])}")
                 # should skip 3 more items after this iteration
                 lexeme_skip_counter = 3
 
@@ -766,11 +743,10 @@ def symbolTableAnalyzer(_lexemesList):
         if rFlag:
             if identifier in identifier in ["WIN", "FAIL"] or each_item[1] in ["Integer Literal", "Float Literal"]:
                 variableValues[currentVariable] = identifier
-                set_variable_value(currentVariable, identifier)
                 rFlag = False
 
         if identifier == "R":
-            # print("==================================================")
+            print("==================================================")
             currentVariable = lexemesList[current_lexeme_index-1][0]
             rFlag = True
             value = get_numerical_value_from_string(lexemesList[current_lexeme_index+1][0])
@@ -790,7 +766,7 @@ def symbolTableAnalyzer(_lexemesList):
                         # update if found
                         each_item[1] = lexemesList[current_lexeme_index+1][0]
 
-        # CASE OF: GIMMEH          
+        # CASE OF: GIMMEH
         if identifier == "GIMMEH":
             gimmeh(lexemesList[current_lexeme_index+1][0])
         
@@ -798,7 +774,7 @@ def symbolTableAnalyzer(_lexemesList):
         if visibleFlag:
             if each_item[0] == "\n":
                 if printOpFlag:
-                    printList += str(variableValues["it"])
+                    printList += variableValues["it"]
                     printList += " "
                     printOpFlag = False
 
@@ -821,7 +797,7 @@ def symbolTableAnalyzer(_lexemesList):
                 
                 if each_item[0] in variableValues.keys() and not printOpFlag:
                     
-                    printList += str(variableValues[identifier])
+                    printList += variableValues[identifier]
                 printList += " "
 
             elif identifier in ["WIN", "FAIL"] or each_item[1] in ["Integer Literal", "Float Literal"]:
@@ -957,15 +933,15 @@ def symbolTableAnalyzer(_lexemesList):
                     i = i+2
 
                 # compute the value
-                    # print("\nStarting arithmetic operations\n")
+                    print("\nStarting arithmetic operations\n")
                 for each_operation in reversed(arithmetic_operations): 
-                    # print(f"On queue for operation {each_operation}:")
+                    print(f"On queue for operation {each_operation}:")
                     value_1 = arithmetic_values_container.pop(0)
-                    # print(f"accumulator[0]: {value_1}")
+                    print(f"accumulator[0]: {value_1}")
                     value_2 = arithmetic_values_container.pop(0)
-                    # print(f"accumulator[1]: {value_2}\n")
+                    print(f"accumulator[1]: {value_2}\n")
                     arithmetic_values_container.insert(0, perform_arithmetic_operation(each_operation, value_1, value_2))
-                # print(f"Final value: {arithmetic_values_container[0]}\n")
+                print(f"Final value: {arithmetic_values_container[0]}\n")
 
                 # skip the number of times according sa i
                 lexeme_skip_counter = i-2
@@ -989,7 +965,7 @@ def symbolTableAnalyzer(_lexemesList):
                 lexeme_skip_counter = 3
                 
                 # if (result != ERROR):
-                # print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} A {lexemesList[current_lexeme_index+3][0]}: {result}")
+                print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} A {lexemesList[current_lexeme_index+3][0]}: {result}")
 
             # if in case YARN
             else:
@@ -999,7 +975,7 @@ def symbolTableAnalyzer(_lexemesList):
                 lexeme_skip_counter = 2
                 
                 # if (result != ERROR):
-                # print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} {lexemesList[current_lexeme_index+2][0]}: {result}")
+                print(f"Result for MAEK {lexemesList[current_lexeme_index+1][0]} {lexemesList[current_lexeme_index+2][0]}: {result}")
 
 
         #  ============= CASE OF: IS NOW A ============= 
@@ -1008,7 +984,7 @@ def symbolTableAnalyzer(_lexemesList):
             # is_now_a takes in variable name and target datatype
             result = is_now_a(lexemesList[current_lexeme_index-1][0], lexemesList[current_lexeme_index+1][0])
             lexeme_skip_counter = 1
-            # print(f"IS_NOW_A successfully implemented.")
+            print(f"IS_NOW_A successfully implemented.")
             
         #  ============= CASE OF: SMOOSH ============= 
         if identifier == "SMOOSH":
@@ -1029,7 +1005,7 @@ def symbolTableAnalyzer(_lexemesList):
                     break
             
             # result is now complete
-            # print(f"Result for SMOOSH: {result}")
+            print(f"Result for SMOOSH: {result}")
 
             # skip properly
             lexeme_skip_counter = i
@@ -1066,8 +1042,8 @@ def symbolTableAnalyzer(_lexemesList):
                     print("Proper placement, trying...")
                     
                     # collect the strings
-                    value_1 = lexemesList[current_lexeme_index+1][0]
-                    value_2 = lexemesList[current_lexeme_index+6][0]
+                    value_1 = lexemesList[current_lexeme_index+1]
+                    value_2 = lexemesList[current_lexeme_index+6]
                     result = ""
 
                     if relational_keyword == "BIGGR OF":
@@ -1095,19 +1071,15 @@ def symbolTableAnalyzer(_lexemesList):
 
             # CASE OF: BOTH SAEM <x> AN <y>
             # collect the strings
-            value_1 = lexemesList[current_lexeme_index+1][0]
-            value_2 = lexemesList[current_lexeme_index+3][0]
+            value_1 = lexemesList[current_lexeme_index+1]
+            value_2 = lexemesList[current_lexeme_index+3]
             result = ""
 
-            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}"):
-                
+            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) == get_datatype(get_variable_value(value_2)):
                 result = "WIN"
             else:
                 result = "FAIL"
-                print(get_variable_value(value_1), get_variable_value(value_2))
 
-
-            print("Result: ", result)
             variableValues["it"] = result
             print(result)
             print(f"Result from BOTH SAEM: {result}")            
@@ -1150,8 +1122,8 @@ def symbolTableAnalyzer(_lexemesList):
                     print("Proper placement, trying...")
                     
                     # collect the strings
-                    value_1 = lexemesList[current_lexeme_index+1][0]
-                    value_2 = lexemesList[current_lexeme_index+6][0]
+                    value_1 = lexemesList[current_lexeme_index+1]
+                    value_2 = lexemesList[current_lexeme_index+6]
                     result = ""
 
                     if relational_keyword == "BIGGR OF":
@@ -1177,12 +1149,11 @@ def symbolTableAnalyzer(_lexemesList):
                 continue
 
             # collect the strings
-            print(lexemesList)
-            value_1 = lexemesList[current_lexeme_index+1][0]
-            value_2 = lexemesList[current_lexeme_index+3][0]
+            value_1 = lexemesList[current_lexeme_index+1]
+            value_2 = lexemesList[current_lexeme_index+3]
             result = ""
 
-            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}"):
+            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) == get_datatype(get_variable_value(value_2)):
                 result = "FAIL"
             else:
                 result = "WIN"
@@ -1220,18 +1191,11 @@ def execute():
     terminal.delete('1.0', tk.END)
     terminal.configure(state = "disabled")
 
-    print("[!] execute ------------------------------------------ [!]")    
-
     for line in editorContent:
         if tempList != []:
             tempList += "\n"
 
-        # replace tabs with a single space
-        noTabs = line.replace("\t", " ")
-        
-        # split on spaces then add each to the tempList
-        tempList += noTabs.strip().split(" ")
-
+        tempList += line.strip().split(" ")    # split on spaces then add each to the tempList
 
     # variable that stores the current string for strings with two or more values
     # this will be empty if placed in dictionary, else not empty
@@ -1244,49 +1208,44 @@ def execute():
     # iterate through each token in the tempList
     current_newline_count = 1
     for token in tempList:
-
         # if BTW is encountered, ignore tokens until the end of the line
-        if token == "BTW":
+        if token == "BTW": 
             btwFlag = True
             current_newline_count += 1
 
         # if BTW keyterm
         elif btwFlag == True:
-            if token == "\n":
+            if token == "\n":       
                 btwFlag = False
                 current_newline_count += 1
             else:
-                continue
-            # else:
-            #     existingLexemesDict[token] = "Comment"
-            #     existingLexemesList.append([token, "Comment"])
-            #     existingLexemesDict_newline_reference.append(current_newline_count)
-            #     continue
+                existingLexemesDict[token] = "Comment"
+                existingLexemesList.append([token, "Comment"])
+                existingLexemesDict_newline_reference.append(current_newline_count)
+            continue
 
         # if OBTW is encounted, ignore tokens until TLDR has been reached
         if token == "OBTW": 
             obtwFlag = True
-        
         elif obtwFlag == True:
             print(f"OBTW flag is on, on current item '{token}'.")
             if token == "TLDR":     
                 obtwFlag = False
             else:
+                # existingLexemesDict[token] = "Comment"
+                # existingLexemesList.append([token, "Comment"])          
+                # existingLexemesDict_newline_reference.append(current_newline_count)         
+                # print(f"Current existing Lexemes: {existing}")
                 continue
-            # else:
-            #     existingLexemesDict[token] = "Comment"
-            #     existingLexemesList.append([token, "Comment"])          
-            #     existingLexemesDict_newline_reference.append(current_newline_count)         
-            #     continue
 
         # if token not in keywords
         if token not in la.allKeywords.keys() or current_iterator != la.iterator:
-            if re.search("[0-9]\\.[0-9]", token) != None and token[0] == "\"" and token[-1] == "\"":
+            if re.search("[0-9]\.[0-9]", token) != None and token[0] == "\"" and token[-1] == "\"":
                 existingLexemesDict[token] = "Stringed Number Literal"
                 existingLexemesList.append([token, "Stringed Number Literal"])
                 existingLexemesDict_newline_reference.append(current_newline_count)
                 continue
-            if re.search("[0-9]\\.[0-9]", token) != None:
+            if re.search("[0-9]\.[0-9]", token) != None:
                 existingLexemesDict[token] = "Float Literal"
                 existingLexemesList.append([token, "Float Literal"])
                 existingLexemesDict_newline_reference.append(current_newline_count)
@@ -1381,9 +1340,9 @@ def execute():
 
     # append all tokens and their classifications to the lexemesList
     # for token in existingLexemesDict: lexemesList.append([token, existingLexemesDict[token]])
-    for token in existingLexemesList: 
-        # print(token)
-        lexemesList.append([token[0], token[1]])
+    for token in existingLexemesList: lexemesList.append([token[0], existingLexemesDict[token[0]]])
+    
+    print(lexemesList)
 
     for widget in lexemesFrame.winfo_children(): widget.destroy()
 
@@ -1395,8 +1354,8 @@ def execute():
     lexemesTable = CTkTable(lexemesFrame, row = len(filtered_lexeme_list), column = 2, values = filtered_lexeme_list)
     lexemesTable.pack(expand=True, fill="both", padx=5, pady=5)
 
-
     # TODO: for testing; should be removed
+    print("\n\n#--------------------------- [!] DO TRAVERSAL [!] --------------------------- #")
     new_parser = parser.Parser(lexemesList[1:])
     new_parser.traverse_tokens()
 
