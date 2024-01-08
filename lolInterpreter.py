@@ -590,10 +590,9 @@ def symbolTableAnalyzer(_lexemesList):
             loopDict[lexemesList[current_lexeme_index+1][0]] = ""
             loopOpFlag = True
             current_lexeme_index += 1
-        elif loopLineFlag:
 
-            if identifier == "BOTH SAEM":
-                print('ADS;LKJF;DSKFJDK')
+            print(loopDict)
+        elif loopLineFlag:
 
             if loopOpFlag and not loopFlag:
                 loopOp = identifier
@@ -602,10 +601,10 @@ def symbolTableAnalyzer(_lexemesList):
 
             if identifier == "TIL":
                 loopChecker = "FAIL"
-                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index +1)
+                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index)
             elif identifier == "WILE":
                 loopChecker = "WIN"
-                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index +1)
+                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index)
 
             if identifier == "\n":
                 if variableValues["it"] == loopChecker:
@@ -619,14 +618,18 @@ def symbolTableAnalyzer(_lexemesList):
             if loopFlag:
                 if loopOp == "UPPIN YR":
                     variableValues[loopDict[list(loopDict.keys())[-1]][0]] = int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]) + 1
+                    set_variable_value(loopDict[list(loopDict.keys())[-1]][0], int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]))
                     print(variableValues)
                 elif loopOp == "NERFIN YR":
                     variableValues[loopDict[list(loopDict.keys())[-1]][0]] = int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]) - 1
+                    set_variable_value(loopDict[list(loopDict.keys())[-1]][0], int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]))
                 current_lexeme_index = loopDict[list(loopDict.keys())[-1]][1]
                 loopLineFlag = True
 
             else:
                 del loopDict[list(loopDict.keys())[-1]]
+                print(loopDict)
+
 
         # ============= CASE OF: SWITCH-CASE STATEMENTS =============
 
@@ -763,6 +766,7 @@ def symbolTableAnalyzer(_lexemesList):
         if rFlag:
             if identifier in identifier in ["WIN", "FAIL"] or each_item[1] in ["Integer Literal", "Float Literal"]:
                 variableValues[currentVariable] = identifier
+                set_variable_value(currentVariable, identifier)
                 rFlag = False
 
         if identifier == "R":
@@ -1178,7 +1182,7 @@ def symbolTableAnalyzer(_lexemesList):
             value_2 = lexemesList[current_lexeme_index+3][0]
             result = ""
 
-            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) == get_datatype(get_variable_value(value_2)):
+            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}"):
                 result = "FAIL"
             else:
                 result = "WIN"
