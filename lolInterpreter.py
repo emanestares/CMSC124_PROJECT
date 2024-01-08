@@ -831,8 +831,63 @@ def symbolTableAnalyzer(_lexemesList):
                   
                     # update if number or float
                     else:
-                        # update if found
-                        each_item[1] = lexemesList[current_lexeme_index+1][0]
+
+                        # check if SMOOSH or not
+                        if lexemesList[current_lexeme_index+1][0] == "SMOOSH":
+                            
+
+                            # collect the strings
+                            result = " "
+
+                            # append appropriately iteratively
+                            i=2
+                            while(True):    
+                                print(f"Current i is {i}")
+                                if (lexemesList[current_lexeme_index+i+1][0] == "\""):
+                                    result += lexemesList[current_lexeme_index+i+2][0]
+                                    i += 4
+                                elif (lexemesList[current_lexeme_index+i+1][0] == "AN"):
+                                    value = lexemesList[current_lexeme_index+i][0]
+                                    print(f"Value is {value}, variables list apparently {variables_list}")
+                                    is_variable = False
+                                    for variable in variables_list:
+                                        if variable[0] == value: is_variable = True
+                                    if is_variable:
+                                        result += f"{get_variable_value(value)}"
+                                        print(f"RESULT: VALUE OF {value} is {get_variable_value(value)}")
+                                    else:
+                                        result += value
+                                    i += 2
+                                else:
+                                    value = lexemesList[current_lexeme_index+i][0]
+                                    print(f"Value is {value}, variables list apparently {variables_list}")
+                                    is_variable = False
+                                    for variable in variables_list:
+                                        if variable[0] == value: is_variable = True
+                                    if is_variable:
+                                        result += f"{get_variable_value(value)}"
+                                        print(f"RESULT: VALUE OF {value} is {get_variable_value(value)}")
+                                    else:
+                                        result += value
+                                    break
+                            
+                            # result is now complete
+                            print(f"Result for SMOOSH: {result}")
+                            lexeme_skip_counter = i-current_lexeme_index
+
+                            # check if uninitialized
+                            if len(result) > 16:
+                                if result[0:16] == "<uninitialized>":
+                                    each_item[1] = "<uninitialized>"
+                            
+                            else:
+                                # update if found
+                                each_item[1] = result
+
+
+                        else:
+                            # update if found
+                            each_item[1] = lexemesList[current_lexeme_index+1][0]
 
         # CASE OF: GIMMEH          
         if identifier == "GIMMEH":
