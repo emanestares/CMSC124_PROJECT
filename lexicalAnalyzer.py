@@ -76,6 +76,11 @@ boolean_operations_inf = [
     "ALL OF"
 ]
 
+partial_relational_operators = [ 
+    "BIGGR OF",
+    "SMALLR OF"
+]
+
 arithmetic_operations = [
     "SUM OF", 
     "MOD OF", 
