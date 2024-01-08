@@ -235,6 +235,19 @@ def gimmeh(variable):
 # helper function that returns the value of a specific variable
 def get_variable_value(variable):
     global variables_list
+
+    print(variables_list)
+    print(variable)
+
+    if variable in ["WIN", "FAIL"]:
+        return variable 
+
+    if variable.isdigit():
+        if variable.find(".") != -1:
+            return float(variable)
+        else:
+            return int(variable)
+
     for value_pair in variables_list:
         if (value_pair[0] == variable):
             return value_pair[1]
@@ -565,34 +578,35 @@ def symbolTableAnalyzer(lexemesList):
 
         if identifier == "IM IN YR":
             loopLineFlag = True
+            loopDict[lexemesList[current_lexeme_index+1][0]] = ""
+            loopOpFlag = True
+            current_lexeme_index += 1
         elif loopLineFlag:
-            if each_item[1] == "Variable Identifier" and not loopOpFlag:
-                loopDict[identifier] = ""
-                loopOpFlag = True
-            
-            if loopOpFlag:
+
+            if loopOpFlag and not loopFlag:
                 loopOp = identifier
-                loopDict[list(loopDict.keys())[-1]] = [lexemesList[current_lexeme_index+1]]
+                loopDict[list(loopDict.keys())[-1]] = [lexemesList[current_lexeme_index+1][0]]
                 loopOpFlag = False
 
             if identifier == "TIL":
                 loopChecker = "FAIL"
-                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index)
+                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index +1)
             elif identifier == "WILE":
                 loopChecker = "WIN"
-                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index)
+                loopDict[list(loopDict.keys())[-1]].append(current_lexeme_index +1)
 
             if identifier == "\n":
                 if variableValues["it"] == loopChecker:
                     loopFlag = True
                 else:
                     loopFlag = False
-                    loopLineFlag = False
+                loopLineFlag = False
 
         elif identifier == "IM OUTTA YR":
             if loopFlag:
                 if loopOp == "UPPIN YR":
                     variableValues[loopDict[list(loopDict.keys())[-1]][0]] = int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]) + 1
+                    print(variableValues)
                 elif loopOp == "NERFIN YR":
                     variableValues[loopDict[list(loopDict.keys())[-1]][0]] = int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]) - 1
                 current_lexeme_index = loopDict[list(loopDict.keys())[-1]][1]
@@ -767,7 +781,7 @@ def symbolTableAnalyzer(lexemesList):
         if visibleFlag:
             if each_item[0] == "\n":
                 if printOpFlag:
-                    printList += variableValues["it"]
+                    printList += str(variableValues["it"])
                     printList += " "
                     printOpFlag = False
 
@@ -790,7 +804,7 @@ def symbolTableAnalyzer(lexemesList):
                 
                 if each_item[0] in variableValues.keys() and not printOpFlag:
                     
-                    printList += variableValues[identifier]
+                    printList += str(variableValues[identifier])
                 printList += " "
 
             elif identifier in ["WIN", "FAIL"] or each_item[1] in ["Integer Literal", "Float Literal"]:
@@ -1057,15 +1071,19 @@ def symbolTableAnalyzer(lexemesList):
 
             # CASE OF: BOTH SAEM <x> AN <y>
             # collect the strings
-            value_1 = lexemesList[current_lexeme_index+1]
-            value_2 = lexemesList[current_lexeme_index+3]
+            value_1 = lexemesList[current_lexeme_index+1][0]
+            value_2 = lexemesList[current_lexeme_index+3][0]
             result = ""
 
-            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) == get_datatype(get_variable_value(value_2)):
+            if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}"):
+                
                 result = "WIN"
             else:
                 result = "FAIL"
+                print(get_variable_value(value_1), get_variable_value(value_2))
 
+
+            print("Result: ", result)
             variableValues["it"] = result
             print(result)
             print(f"Result from BOTH SAEM: {result}")            
