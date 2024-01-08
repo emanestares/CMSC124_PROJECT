@@ -590,6 +590,9 @@ def symbolTableAnalyzer(_lexemesList):
             current_lexeme_index += 1
         elif loopLineFlag:
 
+            if identifier == "BOTH SAEM":
+                print('ADS;LKJF;DSKFJDK')
+
             if loopOpFlag and not loopFlag:
                 loopOp = identifier
                 loopDict[list(loopDict.keys())[-1]] = [lexemesList[current_lexeme_index+1][0]]
@@ -610,6 +613,7 @@ def symbolTableAnalyzer(_lexemesList):
                 loopLineFlag = False
 
         elif identifier == "IM OUTTA YR":
+
             if loopFlag:
                 if loopOp == "UPPIN YR":
                     variableValues[loopDict[list(loopDict.keys())[-1]][0]] = int(variableValues[loopDict[list(loopDict.keys())[-1]][0]]) + 1
