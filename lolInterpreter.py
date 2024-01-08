@@ -1008,17 +1008,54 @@ def symbolTableAnalyzer(lexemesList):
         
         #  ============= CASE OF: BOTH SAEM ============= 
         if identifier == "BOTH SAEM":
-            '''
-            Theoreticals:
 
-            Working:
-            BOTH SAEM <x> AN <y>
+            # check if there are BIGGR OF or SMALLR OF keywords
+            has_relational_keyword = False
+            relational_keyword = ""
+            keyword_index = 0
+            for index in range(6):
+                if lexemesList[current_lexeme_index+index][0] in la.partial_relational_operators:
+                    has_relational_keyword = True
+                    keyword_index = index
+                    relational_keyword = lexemesList[current_lexeme_index+index][0]
+                    break
 
-            to implement soon:
-            BOTH SAEM <x> AN BIGGR OF <x> AN <y> BTW x >= y
-            BOTH SAEM <x> AN SMALLR OF <x> AN <y> BTW x <= y
-            '''
-            
+            # CASE OF:
+            #    BOTH SAEM <x> AN BIGGR OF <x> AN <y>
+            #    BOTH SAEM <x> AN SMALLR OF <x> AN <y>
+            if has_relational_keyword:
+                        
+                # if invalid placement
+                if keyword_index != 3 or lexemesList[current_lexeme_index+1][0] != lexemesList[current_lexeme_index+4][0]:
+                    print("Error: Invalid syntax found.")
+                
+                else:
+                    print("Proper placement, trying...")
+                    
+                    # collect the strings
+                    value_1 = lexemesList[current_lexeme_index+1]
+                    value_2 = lexemesList[current_lexeme_index+6]
+                    result = ""
+
+                    if relational_keyword == "BIGGR OF":
+                        if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) >= get_datatype(get_variable_value(value_2)):
+                            result = "WIN"
+                        else:
+                            result = "FAIL"
+                        print(f"Result from BOTH SAEM (with BIGGR OF): {result}")            
+
+                    else:
+                        if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) <= get_datatype(get_variable_value(value_2)):
+                            result = "WIN"
+                        else:
+                            result = "FAIL"
+                        print(f"Result from BOTH SAEM (with SMALLR OF): {result}")            
+
+                # skip properly
+                lexeme_skip_counter = 6
+                continue
+
+            # CASE OF: BOTH SAEM <x> AN <y>
             # collect the strings
             value_1 = lexemesList[current_lexeme_index+1]
             value_2 = lexemesList[current_lexeme_index+3]
@@ -1049,7 +1086,52 @@ def symbolTableAnalyzer(lexemesList):
             DIFFRINT <x> AN BIGGR OF <x> AN <y> BTW x < y
             '''
             
-            
+            # check if there are BIGGR OF or SMALLR OF keywords
+            has_relational_keyword = False
+            relational_keyword = ""
+            keyword_index = 0
+            for index in range(6):
+                if lexemesList[current_lexeme_index+index][0] in la.partial_relational_operators:
+                    has_relational_keyword = True
+                    keyword_index = index
+                    relational_keyword = lexemesList[current_lexeme_index+index][0]
+                    break
+
+            # CASE OF:
+            #    DIFFRINT <x> AN BIGGR OF <x> AN <y>
+            #    DIFFRINT <x> AN SMALLR OF <x> AN <y>
+            if has_relational_keyword:
+                        
+                # if invalid placement
+                if keyword_index != 3 or lexemesList[current_lexeme_index+1][0] != lexemesList[current_lexeme_index+4][0]:
+                    print("Error: Invalid syntax found.")
+                    
+                else:
+                    print("Proper placement, trying...")
+                    
+                    # collect the strings
+                    value_1 = lexemesList[current_lexeme_index+1]
+                    value_2 = lexemesList[current_lexeme_index+6]
+                    result = ""
+
+                    if relational_keyword == "BIGGR OF":
+                        if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) > get_datatype(get_variable_value(value_2)):
+                            result = "WIN"
+                        else:
+                            result = "FAIL"
+                        print(f"Result from DIFFRINT (with BIGGR OF): {result}")            
+
+                    else:
+                        if (f"{get_variable_value(value_1)}" == f"{get_variable_value(value_2)}") and get_datatype(get_variable_value(value_1)) < get_datatype(get_variable_value(value_2)):
+                            result = "WIN"
+                        else:
+                            result = "FAIL"
+                        print(f"Result from DIFFRINT (with SMALLR OF): {result}")            
+
+                # skip properly
+                lexeme_skip_counter = 6
+                continue
+
             # collect the strings
             value_1 = lexemesList[current_lexeme_index+1]
             value_2 = lexemesList[current_lexeme_index+3]
@@ -1105,7 +1187,6 @@ def execute():
     
     # iterate through each token in the tempList
     current_newline_count = 1
-    print(tempList)
     for token in tempList:
         # if BTW is encountered, ignore tokens until the end of the line
         if token == "BTW": 
@@ -1203,7 +1284,9 @@ def execute():
                 stack_string_variable = stack_string_variable + f"{token}" if stack_string_variable == "" else stack_string_variable + f" {token}" 
 
                 # check if item is in the iterator
+                print(f"Current token is {token} and is {'found' if token in current_iterator else 'not found'} in current_iterator {current_iterator}.")
                 if token in current_iterator:
+
                     key_value = current_iterator[token] # acquire the next value from iterator
 
                     # if there's no more afterwards
